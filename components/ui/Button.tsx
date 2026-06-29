@@ -1,10 +1,10 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, type HTMLMotionProps } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends HTMLMotionProps<"button"> {
   variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
@@ -33,8 +33,10 @@ export default function Button({
       "bg-slate-100 text-slate-800 hover:bg-slate-200 border border-transparent",
     outline:
       "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-orange-500 hover:text-orange-600",
-    ghost: "bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900",
-    danger: "bg-red-500 text-white hover:bg-red-600 shadow-md shadow-red-500/10",
+    ghost:
+      "bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+    danger:
+      "bg-red-500 text-white hover:bg-red-600 shadow-md shadow-red-500/10",
   };
 
   const sizes = {
@@ -72,9 +74,16 @@ export default function Button({
           />
         </svg>
       )}
-      {!isLoading && leftIcon && <span className="flex-shrink-0">{leftIcon}</span>}
+
+      {!isLoading && leftIcon && (
+        <span className="flex-shrink-0">{leftIcon}</span>
+      )}
+
       <span className="truncate">{children}</span>
-      {!isLoading && rightIcon && <span className="flex-shrink-0">{rightIcon}</span>}
+
+      {!isLoading && rightIcon && (
+        <span className="flex-shrink-0">{rightIcon}</span>
+      )}
     </motion.button>
   );
 }
