@@ -1,10 +1,10 @@
 "use client";
 
 import React from "react";
-import { motion, type HTMLMotionProps } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-interface ButtonProps extends HTMLMotionProps<"button"> {
+interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
@@ -46,9 +46,7 @@ export default function Button({
   };
 
   return (
-    <motion.button
-      whileHover={{ y: disabled || isLoading ? 0 : -2 }}
-      whileTap={{ scale: disabled || isLoading ? 1 : 0.98 }}
+    <button
       className={cn(baseStyles, variants[variant], sizes[size], className)}
       disabled={disabled || isLoading}
       {...props}
@@ -84,6 +82,6 @@ export default function Button({
       {!isLoading && rightIcon && (
         <span className="flex-shrink-0">{rightIcon}</span>
       )}
-    </motion.button>
+    </button>
   );
 }
