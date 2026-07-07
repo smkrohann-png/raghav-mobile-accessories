@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionFromCookies } from "@/lib/auth";
 import { db } from "@/lib/db/memory";
-import { products } from "@/data/storefront";
 
 // GET user's cart
 export async function GET(req: Request) {
@@ -21,7 +20,7 @@ export async function GET(req: Request) {
 
     // Map product IDs to full product details
     const items = cart.items.map((item) => {
-      const product = products.find((p) => p.id === item.productId);
+      const product = db.getProductById(item.productId);
       return {
         ...item,
         product,
@@ -65,7 +64,7 @@ export async function POST(req: Request) {
     }
 
     // Check if product exists
-    const product = products.find((p) => p.id === productId);
+    const product = db.getProductById(productId);
     if (!product) {
       return NextResponse.json(
         { error: "Product not found" },
@@ -108,7 +107,7 @@ export async function POST(req: Request) {
     const updatedCart = db.updateCart(cart.id, cart);
 
     const items = updatedCart.items.map((item) => {
-      const prod = products.find((p) => p.id === item.productId);
+      const prod = db.getProductById(item.productId);
       return {
         ...item,
         product: prod,

@@ -1,4 +1,7 @@
+"use client";
+
 import { Mail, MessageCircle, Phone } from "lucide-react";
+import { FormEvent, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
@@ -7,29 +10,60 @@ import { Section } from "@/components/ui/Section";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { storeInfo } from "@/lib/store-info";
 
-export const metadata = {
-  title: "Support",
-};
-
 export default function SupportPage() {
+  const [sent, setSent] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const requestType = String(formData.get("requestType") || "support");
+    const response = await fetch("/api/requests", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        kind: requestType === "repair" ? "repair" : "support",
+        name: formData.get("name"),
+        email: formData.get("email"),
+        phone: formData.get("phone"),
+        subject: `${requestType}: ${formData.get("reference") || "General"}`,
+        message: formData.get("message"),
+        meta: { reference: String(formData.get("reference") || "") },
+      }),
+    });
+    if (response.ok) {
+      event.currentTarget.reset();
+      setSent(true);
+    }
+  }
+
   return (
     <Section muted className="py-12 sm:py-16 lg:py-20">
       <Container>
-        <SectionTitle className="max-w-3xl" eyebrow="Support" title="Need help before or after ordering?" description="Compatibility, delivery, COD and order support ek hi clear page par." />
+        <div className="max-w-3xl">
+        <SectionTitle eyebrow="Support" title="Need help before or after ordering?" description="Compatibility, delivery, COD and order support ek hi clear page par." />
+        </div>
         <div className="grid gap-6 lg:grid-cols-[380px_minmax(0,1fr)] xl:grid-cols-[420px_minmax(0,1fr)]">
           <div className="space-y-4 order-2 lg:order-1">
             <SupportTile icon={Phone} title={storeInfo.phone} text="Call and WhatsApp support" />
             <SupportTile icon={MessageCircle} title="WhatsApp support" text="Phone model bhej kar product confirm kar sakte hain" />
             <SupportTile icon={Mail} title={storeInfo.email} text="Order and COD help" />
           </div>
-          <form className="order-1 lg:order-2 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 lg:p-8">
+          <form onSubmit={handleSubmit} className="order-1 lg:order-2 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 lg:p-8">
+            <select name="requestType" className="mb-4 h-12 w-full rounded-full border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" defaultValue="support">
+              <option value="support">Order / product support</option>
+              <option value="repair">Repair request</option>
+            </select>
             <div className="grid gap-4 md:grid-cols-2">
-              <Input placeholder="Name" />
-              <Input placeholder="Order ID / Phone model" />
+              <Input name="name" placeholder="Name" required />
+              <Input name="reference" placeholder="Order ID / Phone model" required />
             </div>
-            <Input className="mt-4" placeholder="Email address" type="email" />
-            <textarea className="mt-4 min-h-[140px] sm:min-h-[180px] w-full resize-none rounded-3xl border border-slate-200 bg-white p-4 sm:p-5 text-sm outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="How can we help?" />
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <Input name="email" placeholder="Email address" type="email" required />
+              <Input name="phone" placeholder="Phone number" inputMode="tel" required />
+            </div>
+            <textarea name="message" className="mt-4 min-h-[140px] sm:min-h-[180px] w-full resize-none rounded-3xl border border-slate-200 bg-white p-4 sm:p-5 text-sm outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="How can we help?" required />
             <Button className="mt-5 h-12 w-full sm:w-auto px-8">Send request</Button>
+            {sent ? <p className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">Request admin panel me chali gayi hai.</p> : null}
           </form>
         </div>
       </Container>

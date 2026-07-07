@@ -1,9 +1,11 @@
 export type Review = {
+  id?: string;
   name: string;
   rating: number;
   product: string;
   text: string;
-  status: "Approved" | "Pending";
+  status: "Approved" | "Pending" | "Rejected";
+  createdAt?: string;
 };
 
 export const approvedReviews: Review[] = [

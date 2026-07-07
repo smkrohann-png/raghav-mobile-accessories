@@ -92,7 +92,9 @@ if (!isAuthenticated || !user) {
             <div className="rounded-3xl bg-slate-950 p-5 text-white">
               <p className="text-sm font-semibold text-slate-300">Customer account</p>
               <h1 className="mt-2 text-2xl font-black">{profile ? `${profile.firstName} ${profile.lastName}` : `${user.firstName} ${user.lastName}`}</h1>
-              <p className="mt-2 text-sm text-slate-400">{profile?.username ? `@${profile.username}` : profile?.email || user.email}</p>
+              <p className="mt-2 text-sm text-slate-400">
+  {profile?.email || user.email}
+</p>
             </div>
             <div className="mt-3 grid gap-1">
               {navItems.map(({ label, value, icon: Icon }) => (
@@ -139,7 +141,12 @@ function ProfilePanel({
 }: {
   profile: NonNullable<ReturnType<typeof useProfileStore.getState>["profile"]>;
   isLoading: boolean;
-  onSave: (data: { username?: string; firstName?: string; lastName?: string; email?: string; phone?: string }) => Promise<void>;
+  onSave: (data: {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+}) => Promise<void>;
   refresh: () => Promise<void>;
 }) {
   const [saved, setSaved] = useState(false);
@@ -147,12 +154,11 @@ function ProfilePanel({
   async function saveProfile(formData: FormData) {
     setSaved(false);
     await onSave({
-      username: String(formData.get("username")),
-      firstName: String(formData.get("firstName")),
-      lastName: String(formData.get("lastName")),
-      email: String(formData.get("email")),
-      phone: String(formData.get("phone")),
-    });
+  firstName: String(formData.get("firstName")),
+  lastName: String(formData.get("lastName")),
+  email: String(formData.get("email")),
+  phone: String(formData.get("phone")),
+});
     await refresh();
     setSaved(true);
   }
@@ -161,7 +167,6 @@ function ProfilePanel({
     <form action={saveProfile} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
       <h2 className="text-2xl font-black text-slate-950">Profile details</h2>
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        <Input name="username" defaultValue={profile.username || ""} placeholder="Username" required />
         <Input name="email" defaultValue={profile.email} placeholder="Email address" required type="email" />
         <Input name="firstName" defaultValue={profile.firstName} placeholder="First name" required />
         <Input name="lastName" defaultValue={profile.lastName} placeholder="Last name" required />

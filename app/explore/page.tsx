@@ -141,11 +141,9 @@ export default function RepairCentrePage() {
 
       {/* Repair Request */}
 
-      <Section
-        id="repair-form"
-        className="bg-white py-20"
-      >
-        <Container>
+      <Section className="bg-white py-20">
+  <Container>
+    <div id="repair-form">
 
           <SectionTitle
             eyebrow="Book Repair"
@@ -222,7 +220,7 @@ export default function RepairCentrePage() {
             </button>
 
           </motion.form>
-
+        </div>
         </Container>
       </Section>
 

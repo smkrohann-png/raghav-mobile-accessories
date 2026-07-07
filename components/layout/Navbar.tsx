@@ -10,6 +10,7 @@ import {
   UserRound,
   X,
   Shield,
+  type LucideProps,
 } from "lucide-react";
 
 import { AnimatePresence, motion } from "framer-motion";
@@ -32,12 +33,10 @@ export function Navbar() {
   const [showNavbar, setShowNavbar] = useState(true);
   const lastScrollY = useRef(0);
   const { user, checkAuth } = useAuthStore();
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     checkAuth();
-  }, []);
+  }, [checkAuth]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -139,7 +138,7 @@ export function Navbar() {
               />
             </form>
 
-            {mounted && user?.role === 'admin' && (
+            {user?.role === 'admin' && (
               <IconButton
                 href="/admin/dashboard"
                 label="Admin Panel"
@@ -280,7 +279,7 @@ function MobileNavItem({
   label: string;
   onClick: () => void;
   compact?: boolean;
-  icon?: React.ComponentType<any>;
+  icon?: React.ComponentType<LucideProps>;
 }) {
   return (
     <Link

@@ -64,11 +64,20 @@ export function AuthPanel({ mode }: { mode: AuthMode }) {
       }
 
       if (mode === "register") {
+        const fullName = String(formData.get("fullName") || "").trim();
+        const [firstName = "", ...rest] = fullName.split(/\s+/);
+        const password = String(formData.get("password"));
+        const confirmPassword = String(formData.get("confirmPassword"));
+        if (password !== confirmPassword) {
+          setLocalError("Password and confirm password do not match.");
+          return;
+        }
         await register({
-          fullName: String(formData.get("fullName")),
+          firstName,
+          lastName: rest.join(" ") || "Customer",
+          username: String(formData.get("email")).split("@")[0],
           email: String(formData.get("email")),
-          password: String(formData.get("password")),
-          confirmPassword: String(formData.get("confirmPassword")),
+          password,
           phone: String(formData.get("phone")),
         });
         setSubmitted(true);

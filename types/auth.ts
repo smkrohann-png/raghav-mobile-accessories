@@ -2,6 +2,7 @@ export type UserRole = "customer" | "admin";
 
 export type User = {
   id: string;
+  username?: string;
   email: string;
   password?: string; // hashed password
   firstName: string;

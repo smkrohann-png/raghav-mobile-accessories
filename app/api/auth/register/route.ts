@@ -5,7 +5,7 @@ import { hashPassword, validateEmail, validatePassword, validatePhone, signToken
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { email, password, firstName, lastName, phone } = body;
+    const { email, password, firstName, lastName, phone, username } = body;
 
     // Validation
     if (!email || !password || !firstName || !lastName || !phone) {
@@ -45,11 +45,18 @@ export async function POST(req: Request) {
         { status: 409 }
       );
     }
+    if (username && db.getUserByUsername(username)) {
+      return NextResponse.json(
+        { error: "Username already registered" },
+        { status: 409 }
+      );
+    }
 
     // Hash password and create user
     const hashedPassword = await hashPassword(password);
     const user = db.createUser({
       email,
+      username,
       password: hashedPassword,
       firstName,
       lastName,

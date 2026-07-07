@@ -3,31 +3,30 @@
 import { useAuthStore } from '@/store/auth';
 import { useAdminStore } from '@/store/admin';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import Container from '@/components/ui/Container';
+import Link from 'next/link';
+import { useEffect } from 'react';
+import { Container } from '@/components/ui/Container';
 
 export default function AdminUsersPage() {
   const { user, checkAuth } = useAuthStore();
   const { dashboard, fetchDashboard, isLoading } = useAdminStore();
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     checkAuth();
-  }, []);
+  }, [checkAuth]);
 
   useEffect(() => {
-    if (mounted && user) {
+    if (user) {
       if (user.role !== 'admin') {
         router.push('/');
         return;
       }
       fetchDashboard();
     }
-  }, [mounted, user]);
+  }, [fetchDashboard, router, user]);
 
-  if (!mounted || !user || user.role !== 'admin') {
+  if (!user || user.role !== 'admin') {
     return (
       <Container>
         <div className="py-12 text-center">
@@ -53,7 +52,7 @@ export default function AdminUsersPage() {
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
                 <p className="text-gray-600 text-sm font-medium mb-2">Total Users</p>
                 <p className="text-3xl font-bold text-blue-600">
-                  {dashboard?.totalOrders ? '∞' : 'Loading...'}
+                  {dashboard?.totalUsers ?? 0}
                 </p>
                 <p className="text-xs text-gray-500 mt-2">All registered users</p>
               </div>
@@ -108,9 +107,9 @@ export default function AdminUsersPage() {
 
         {/* Back Button */}
         <div className="mt-8">
-          <a href="/admin/dashboard" className="text-blue-600 hover:text-blue-800 font-medium">
+          <Link href="/admin/dashboard" className="text-blue-600 hover:text-blue-800 font-medium">
             ← Back to Dashboard
-          </a>
+          </Link>
         </div>
       </div>
     </Container>

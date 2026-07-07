@@ -3,40 +3,39 @@
 import { useAuthStore } from '@/store/auth';
 import { useAdminStore } from '@/store/admin';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import Container from '@/components/ui/Container';
+import { Container } from '@/components/ui/Container';
 
 export default function AdminOrdersPage() {
   const { user, checkAuth } = useAuthStore();
   const { orders, fetchAllOrders, updateOrderStatus, isLoading } = useAdminStore();
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
 
   useEffect(() => {
-    setMounted(true);
     checkAuth();
-  }, []);
+  }, [checkAuth]);
 
   useEffect(() => {
-    if (mounted && user) {
+    if (user) {
       if (user.role !== 'admin') {
         router.push('/');
         return;
       }
       fetchAllOrders();
     }
-  }, [mounted, user]);
+  }, [fetchAllOrders, router, user]);
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
-    const validStatuses = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+    const validStatuses = ['Pending', 'Confirmed', 'Packed', 'Shipped', 'Out For Delivery', 'Delivered', 'Cancelled'];
     if (validStatuses.includes(newStatus)) {
       await updateOrderStatus(orderId, newStatus);
       fetchAllOrders();
     }
   };
 
-  if (!mounted || !user || user.role !== 'admin') {
+  if (!user || user.role !== 'admin') {
     return (
       <Container>
         <div className="py-12 text-center">
@@ -47,11 +46,13 @@ export default function AdminOrdersPage() {
   }
 
   const statusColors: { [key: string]: string } = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    confirmed: 'bg-blue-100 text-blue-800',
-    shipped: 'bg-purple-100 text-purple-800',
-    delivered: 'bg-green-100 text-green-800',
-    cancelled: 'bg-red-100 text-red-800',
+    Pending: 'bg-yellow-100 text-yellow-800',
+    Confirmed: 'bg-blue-100 text-blue-800',
+    Packed: 'bg-indigo-100 text-indigo-800',
+    Shipped: 'bg-purple-100 text-purple-800',
+    "Out For Delivery": 'bg-orange-100 text-orange-800',
+    Delivered: 'bg-green-100 text-green-800',
+    Cancelled: 'bg-red-100 text-red-800',
   };
 
   return (
@@ -82,17 +83,19 @@ export default function AdminOrdersPage() {
                     <tr key={order.id} className="border-b hover:bg-gray-50">
                       <td className="px-6 py-4 text-sm font-mono text-gray-600">{order.id}</td>
                       <td className="px-6 py-4 text-sm">
-                        <p className="font-medium">{order.userId}</p>
+                        <p className="font-medium">
+  {order.customerName || order.customer}
+</p>
                       </td>
-                      <td className="px-6 py-4 text-sm font-semibold">₹{order.totalPrice}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{order.items.length} items</td>
+                      <td className="px-6 py-4 text-sm font-semibold">₹{order.amount}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{order.products.length} items</td>
                       <td className="px-6 py-4">
                         <span className={`px-3 py-1 rounded text-sm font-medium ${statusColors[order.status] || 'bg-gray-100'}`}>
                           {order.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
-                        {new Date(order.createdAt).toLocaleDateString()}
+                        {new Date(order.date).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4">
                         <button
@@ -113,7 +116,7 @@ export default function AdminOrdersPage() {
               <div className="bg-gray-50 border-t p-6">
                 <h3 className="font-bold mb-4">Update Order Status</h3>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                  {['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'].map((status) => (
+                  {['Pending', 'Confirmed', 'Packed', 'Shipped', 'Out For Delivery', 'Delivered', 'Cancelled'].map((status) => (
                     <button
                       key={status}
                       onClick={() => handleStatusChange(selectedOrder, status)}
@@ -138,9 +141,9 @@ export default function AdminOrdersPage() {
 
         {/* Back Button */}
         <div className="mt-8">
-          <a href="/admin/dashboard" className="text-blue-600 hover:text-blue-800 font-medium">
+          <Link href="/admin/dashboard" className="text-blue-600 hover:text-blue-800 font-medium">
             ← Back to Dashboard
-          </a>
+          </Link>
         </div>
       </div>
     </Container>

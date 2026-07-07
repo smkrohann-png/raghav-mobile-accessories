@@ -29,6 +29,10 @@ export async function GET(req: Request) {
       totalRevenue: allOrders.reduce((sum, order) => sum + order.amount, 0),
       pendingOrders: allOrders.filter((o) => o.status === "Pending").length,
       completedOrders: allOrders.filter((o) => o.status === "Delivered").length,
+      totalUsers: db.getAllUsers().filter((candidate) => candidate.role === "customer").length,
+      pendingReviews: db.getAllReviews().filter((review) => review.status === "Pending").length,
+      newRequests: db.getAllRequests().filter((request) => request.status === "New").length,
+      totalProducts: db.getAllProducts().length,
     };
 
     const recentOrders = allOrders.slice(-10).reverse();

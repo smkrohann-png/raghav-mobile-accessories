@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Send, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
@@ -9,9 +9,39 @@ import { Input } from "@/components/ui/Input";
 import { Section } from "@/components/ui/Section";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { approvedReviews } from "@/data/reviews";
+import type { Review } from "@/data/reviews";
 
 export default function ReviewsPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [reviews, setReviews] = useState<Review[]>(approvedReviews);
+
+  useEffect(() => {
+    fetch("/api/reviews")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data.reviews)) setReviews(data.reviews);
+      })
+      .catch(() => setReviews(approvedReviews));
+  }, []);
+
+  async function submitReview(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const response = await fetch("/api/reviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: formData.get("name"),
+        product: formData.get("product"),
+        rating: Number(formData.get("rating") || 5),
+        text: formData.get("text"),
+      }),
+    });
+    if (response.ok) {
+      event.currentTarget.reset();
+      setSubmitted(true);
+    }
+  }
 
   return (
     <Section muted>
@@ -23,7 +53,7 @@ export default function ReviewsPage() {
         />
         <div className="grid gap-6 lg:grid-cols-[1fr_0.8fr]">
           <div className="grid gap-5">
-            {approvedReviews.map((review) => (
+            {reviews.map((review) => (
               <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm" key={`${review.name}-${review.product}`}>
                 <div className="flex gap-1 text-orange-400">
                   {Array.from({ length: review.rating }).map((_, index) => (
@@ -38,21 +68,18 @@ export default function ReviewsPage() {
           </div>
           <form
             className="h-fit rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
-            onSubmit={(event) => {
-              event.preventDefault();
-              setSubmitted(true);
-            }}
+            onSubmit={submitReview}
           >
             <h2 className="text-2xl font-black text-slate-950">Write a review</h2>
             <div className="mt-5 grid gap-4">
-              <Input placeholder="Your name" required />
-              <Input placeholder="Product name" required />
-              <select className="h-12 rounded-full border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" defaultValue="5">
+              <Input name="name" placeholder="Your name" required />
+              <Input name="product" placeholder="Product name" required />
+              <select name="rating" className="h-12 rounded-full border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" defaultValue="5">
                 <option value="5">5 stars</option>
                 <option value="4">4 stars</option>
                 <option value="3">3 stars</option>
               </select>
-              <textarea className="min-h-36 resize-none rounded-3xl border border-slate-200 p-5 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="Share your experience" required />
+              <textarea name="text" className="min-h-36 resize-none rounded-3xl border border-slate-200 p-5 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="Share your experience" required />
             </div>
             <Button className="mt-5 w-full" type="submit">
               <Send className="h-4 w-4" />

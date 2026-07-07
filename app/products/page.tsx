@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { RotateCcw, Search } from "lucide-react";
 
 import { ProductCard } from "@/components/storefront/ProductCard";
@@ -10,17 +10,28 @@ import { Container } from "@/components/ui/Container";
 import { Input } from "@/components/ui/Input";
 import { Section } from "@/components/ui/Section";
 import { categories, products } from "@/data/storefront";
+import type { Product } from "@/types/product";
 
 const allOption = "All";
 
 export default function ProductsPage() {
+  const [catalog, setCatalog] = useState<Product[]>(products);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState(allOption);
+
+  useEffect(() => {
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data.products)) setCatalog(data.products);
+      })
+      .catch(() => setCatalog(products));
+  }, []);
 
   const filteredProducts = useMemo(() => {
     const search = query.trim().toLowerCase();
 
-    return products.filter((product) => {
+    return catalog.filter((product) => {
       const searchMatch =
         !search ||
         [
@@ -44,7 +55,7 @@ export default function ProductsPage() {
 
       return searchMatch && categoryMatch;
     });
-  }, [category, query]);
+  }, [catalog, category, query]);
 
   const resetFilters = () => {
     setQuery("");

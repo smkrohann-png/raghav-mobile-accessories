@@ -1,4 +1,7 @@
+"use client";
+
 import { Mail, MapPin, Phone } from "lucide-react";
+import { FormEvent, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
@@ -7,11 +10,29 @@ import { Section } from "@/components/ui/Section";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { storeInfo } from "@/lib/store-info";
 
-export const metadata = {
-  title: "Contact",
-};
-
 export default function ContactPage() {
+  const [sent, setSent] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const response = await fetch("/api/requests", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        kind: "contact",
+        name: formData.get("name"),
+        email: formData.get("email"),
+        subject: `Phone model: ${formData.get("phoneModel") || "Not shared"}`,
+        message: formData.get("message"),
+      }),
+    });
+    if (response.ok) {
+      event.currentTarget.reset();
+      setSent(true);
+    }
+  }
+
   return (
     <Section muted>
       <Container>
@@ -26,16 +47,17 @@ export default function ContactPage() {
             <ContactTile icon={Mail} title={storeInfo.email} text="Product support and bulk orders" />
             <ContactTile icon={MapPin} title={storeInfo.shortAddress} text="Yamunanagar local store and dispatch" />
           </div>
-          <form className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <form onSubmit={handleSubmit} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
             <div className="grid gap-4 sm:grid-cols-2">
-              <Input placeholder="Name" />
-              <Input placeholder="Phone model" />
+              <Input name="name" placeholder="Name" required />
+              <Input name="phoneModel" placeholder="Phone model" />
             </div>
             <div className="mt-4">
-              <Input placeholder="Email address" type="email" />
+              <Input name="email" placeholder="Email address" type="email" required />
             </div>
-            <textarea className="mt-4 min-h-40 w-full resize-none rounded-3xl border border-slate-200 bg-white p-5 text-sm outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="Tell us what you are looking for" />
+            <textarea name="message" className="mt-4 min-h-40 w-full resize-none rounded-3xl border border-slate-200 bg-white p-5 text-sm outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="Tell us what you are looking for" required />
             <Button className="mt-4 w-full sm:w-auto">Send message</Button>
+            {sent ? <p className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">Message admin panel me chala gaya hai.</p> : null}
           </form>
         </div>
       </Container>

@@ -3,31 +3,30 @@
 import { useAuthStore } from '@/store/auth';
 import { useAdminStore } from '@/store/admin';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import Container from '@/components/ui/Container';
+import Link from 'next/link';
+import { Container } from '@/components/ui/Container';
+import { useEffect } from "react";
 
 export default function AdminDashboardPage() {
   const { user, checkAuth } = useAuthStore();
   const { dashboard, fetchDashboard, isLoading } = useAdminStore();
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     checkAuth();
-  }, []);
+  }, [checkAuth]);
 
   useEffect(() => {
-    if (mounted && user) {
+    if (user) {
       if (user.role !== 'admin') {
         router.push('/');
         return;
       }
       fetchDashboard();
     }
-  }, [mounted, user]);
+  }, [fetchDashboard, router, user]);
 
-  if (!mounted || !user || user.role !== 'admin') {
+  if (!user || user.role !== 'admin') {
     return (
       <Container>
         <div className="py-12 text-center">
@@ -82,20 +81,20 @@ export default function AdminDashboardPage() {
             <div className="bg-white rounded-lg border p-6 mb-8">
               <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <a
+                <Link
                   href="/admin/orders"
                   className="block p-4 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition text-center"
                 >
                   <p className="font-semibold text-blue-600">View All Orders</p>
                   <p className="text-sm text-gray-600">Manage customer orders</p>
-                </a>
-                <a
+                </Link>
+                <Link
                   href="/admin/users"
                   className="block p-4 bg-green-50 hover:bg-green-100 rounded-lg border border-green-200 transition text-center"
                 >
                   <p className="font-semibold text-green-600">User Statistics</p>
                   <p className="text-sm text-gray-600">View user analytics</p>
-                </a>
+                </Link>
               </div>
             </div>
 

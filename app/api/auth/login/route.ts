@@ -1,35 +1,32 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/memory";
-import { comparePassword, hashPassword, signToken, setAuthCookie, validateEmail } from "@/lib/auth";
+import { comparePassword, hashPassword, signToken, setAuthCookie } from "@/lib/auth";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { email, password } = body;
+    const identifier = String(body.identifier || body.email || "").trim();
+    const { password } = body;
 
     // Validation
-    if (!email || !password) {
+    if (!identifier || !password) {
       return NextResponse.json(
-        { error: "Email and password required" },
+        { error: "Username/email and password required" },
         { status: 400 }
       );
     }
 
-    if (!validateEmail(email)) {
-      return NextResponse.json(
-        { error: "Invalid email format" },
-        { status: 400 }
-      );
-    }
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@raghav.com";
+    const adminPassword = process.env.ADMIN_PASSWORD || "admin@123";
+    const isConfiguredAdmin =
+      (identifier.toLowerCase() === adminEmail.toLowerCase() || identifier.toLowerCase() === "admin") &&
+      password === adminPassword;
 
-    const adminEmail = process.env.ADMIN_EMAIL;
-    const adminPassword = process.env.ADMIN_PASSWORD;
-    const isConfiguredAdmin = adminEmail && adminPassword && email === adminEmail && password === adminPassword;
-
-    let user = db.getUserByEmail(email);
+    let user = db.getUserByIdentifier(identifier);
     if (isConfiguredAdmin && !user) {
       user = db.createUser({
-        email,
+        username: "admin",
+        email: adminEmail,
         password: await hashPassword(password),
         firstName: "Raghav",
         lastName: "Admin",
@@ -38,7 +35,7 @@ export async function POST(req: Request) {
       });
       db.createCart(user.id);
     } else if (isConfiguredAdmin && user && user.role !== "admin") {
-      user = db.updateUser(user.id, { role: "admin" }) || user;
+      user = db.updateUser(user.id, { role: "admin", username: "admin" }) || user;
     }
 
     // Find user

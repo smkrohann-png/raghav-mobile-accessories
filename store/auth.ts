@@ -11,10 +11,11 @@ interface AuthStore {
 
   // Actions
   checkAuth: () => Promise<void>;
-  login: (email: string, password: string) => Promise<void>;
+  login: (identifier: string, password: string) => Promise<void>;
   register: (data: {
     email: string;
     password: string;
+    username?: string;
     firstName: string;
     lastName: string;
     phone: string;
@@ -49,10 +50,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
     }
   },
 
-  login: async (email: string, password: string) => {
+  login: async (identifier: string, password: string) => {
     try {
       set({ isLoading: true, error: null });
-      const { data } = await axios.post("/api/auth/login", { email, password });
+      const { data } = await axios.post("/api/auth/login", { identifier, password });
       set({
         user: data.user,
         isAuthenticated: true,

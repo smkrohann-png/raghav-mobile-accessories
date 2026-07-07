@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionFromCookies } from "@/lib/auth";
 import { db } from "@/lib/db/memory";
-import { products } from "@/data/storefront";
 
 // UPDATE cart item quantity
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -46,7 +45,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       cart.items.splice(itemIndex, 1);
     } else {
       // Check stock
-      const product = products.find((p) => p.id === productId);
+      const product = db.getProductById(productId);
       if (product && product.stock < quantity) {
         return NextResponse.json(
           { error: "Insufficient stock" },
@@ -59,7 +58,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const updatedCart = db.updateCart(cart.id, cart);
 
     const items = updatedCart.items.map((item) => {
-      const prod = products.find((p) => p.id === item.productId);
+      const prod = db.getProductById(item.productId);
       return {
         ...item,
         product: prod,
@@ -115,7 +114,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     const updatedCart = db.updateCart(cart.id, cart);
 
     const items = updatedCart.items.map((item) => {
-      const prod = products.find((p) => p.id === item.productId);
+      const prod = db.getProductById(item.productId);
       return {
         ...item,
         product: prod,
