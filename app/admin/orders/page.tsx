@@ -1,161 +1,148 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { Order } from "@/types";
-import { formatPrice } from "@/lib/utils";
-import { getStoredOrders, updateStoredOrderStatus } from "@/services/mock-db";
-import { ShoppingBag, ChevronDown, ChevronUp, Eye, Truck, RefreshCw } from "lucide-react";
-import Button from "@/components/ui/Button";
+import { useAuthStore } from '@/store/auth';
+import { useAdminStore } from '@/store/admin';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import Container from '@/components/ui/Container';
 
 export default function AdminOrdersPage() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-
-  const fetchOrders = () => {
-    setOrders(getStoredOrders());
-  };
+  const { user, checkAuth } = useAuthStore();
+  const { orders, fetchAllOrders, updateOrderStatus, isLoading } = useAdminStore();
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchOrders();
+    setMounted(true);
+    checkAuth();
   }, []);
 
-  const handleUpdateStatus = (orderId: string, status: Order["status"]) => {
-    updateStoredOrderStatus(orderId, status);
-    fetchOrders();
+  useEffect(() => {
+    if (mounted && user) {
+      if (user.role !== 'admin') {
+        router.push('/');
+        return;
+      }
+      fetchAllOrders();
+    }
+  }, [mounted, user]);
+
+  const handleStatusChange = async (orderId: string, newStatus: string) => {
+    const validStatuses = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+    if (validStatuses.includes(newStatus)) {
+      await updateOrderStatus(orderId, newStatus);
+      fetchAllOrders();
+    }
   };
 
-  // Shiprocket webhook simulator
-  const handleSimulateWebhook = (orderId: string) => {
-    // Advance status cycle: pending -> processing -> shipped -> delivered
-    const ord = orders.find((o) => o.id === orderId);
-    if (!ord) return;
+  if (!mounted || !user || user.role !== 'admin') {
+    return (
+      <Container>
+        <div className="py-12 text-center">
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </Container>
+    );
+  }
 
-    let nextStatus: Order["status"] = "pending";
-    if (ord.status === "pending") nextStatus = "processing";
-    else if (ord.status === "processing") nextStatus = "shipped";
-    else if (ord.status === "shipped") nextStatus = "delivered";
-    else if (ord.status === "delivered") nextStatus = "cancelled";
-
-    updateStoredOrderStatus(orderId, nextStatus);
-    fetchOrders();
-    alert(`Shiprocket Hook Triggered: Order status transitioned to '${nextStatus}'`);
+  const statusColors: { [key: string]: string } = {
+    pending: 'bg-yellow-100 text-yellow-800',
+    confirmed: 'bg-blue-100 text-blue-800',
+    shipped: 'bg-purple-100 text-purple-800',
+    delivered: 'bg-green-100 text-green-800',
+    cancelled: 'bg-red-100 text-red-800',
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Title */}
-      <div>
-        <h1 className="text-2xl font-black text-slate-800">Order Management</h1>
-        <p className="text-xs font-semibold text-slate-400 mt-1 uppercase tracking-wider">
-          Track customer payments, dispatch items, and trigger Shiprocket API webhooks
-        </p>
-      </div>
+    <Container>
+      <div className="py-12">
+        <h1 className="text-4xl font-bold mb-2">Orders Management</h1>
+        <p className="text-gray-600 mb-8">Manage all customer orders</p>
 
-      {/* Orders Table */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm overflow-x-auto">
-        <table className="w-full text-xs text-left border-collapse">
-          <thead>
-            <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider">
-              <th className="py-3">Order ID</th>
-              <th className="py-3">Customer</th>
-              <th className="py-3">Paid Total</th>
-              <th className="py-3">Method</th>
-              <th className="py-3">Payment</th>
-              <th className="py-3">Status</th>
-              <th className="py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((ord) => {
-              const isExpanded = expandedId === ord.id;
-              return (
-                <>
-                  <tr key={ord.id} className="border-b border-slate-50 font-semibold text-slate-700 hover:bg-slate-50/40">
-                    <td className="py-4 font-bold text-slate-800">#{ord.id}</td>
-                    <td className="py-4">{ord.shippingAddress.name}</td>
-                    <td className="py-4 font-black text-slate-950">{formatPrice(ord.total)}</td>
-                    <td className="py-4 uppercase">{ord.paymentMethod}</td>
-                    <td className="py-4">
-                      <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase ${
-                        ord.paymentStatus === "paid" ? "bg-emerald-50 text-emerald-700" : "bg-orange-50 text-orange-600"
-                      }`}>
-                        {ord.paymentStatus}
-                      </span>
-                    </td>
-                    <td className="py-4">
-                      <select
-                        value={ord.status}
-                        onChange={(e) => handleUpdateStatus(ord.id, e.target.value as Order["status"])}
-                        className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1 text-xs font-semibold outline-none"
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="processing">Processing</option>
-                        <option value="shipped">Shipped</option>
-                        <option value="delivered">Delivered</option>
-                        <option value="cancelled">Cancelled</option>
-                      </select>
-                    </td>
-                    <td className="py-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => handleSimulateWebhook(ord.id)}
-                          title="Simulate Shiprocket transit update"
-                          className="p-2 border border-slate-150 rounded-xl hover:border-orange-500 hover:text-orange-500 transition text-slate-500"
-                        >
-                          <Truck size={14} />
-                        </button>
-                        <button
-                          onClick={() => setExpandedId(isExpanded ? null : ord.id)}
-                          className="p-2 border border-slate-150 rounded-xl hover:border-slate-400 transition text-slate-500"
-                        >
-                          {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                        </button>
-                      </div>
-                    </td>
+        {isLoading ? (
+          <div className="text-center py-12">Loading orders...</div>
+        ) : orders && orders.length > 0 ? (
+          <div className="bg-white rounded-lg border overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Order ID</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Customer</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Amount</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Items</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Date</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Action</th>
                   </tr>
-
-                  {/* Expanded Detail Panel */}
-                  {isExpanded && (
-                    <tr className="bg-slate-50/30">
-                      <td colSpan={7} className="p-6 border-b border-slate-100">
-                        <div className="grid gap-6 md:grid-cols-2 text-xs font-semibold text-slate-650">
-                          <div>
-                            <h4 className="font-black text-slate-800 uppercase text-[9px] tracking-wider mb-2">
-                              Shipping & Pincode info
-                            </h4>
-                            <p>{ord.shippingAddress.line1}, {ord.shippingAddress.line2 ? `${ord.shippingAddress.line2}, ` : ""}{ord.shippingAddress.city}, {ord.shippingAddress.state} - {ord.shippingAddress.pincode}</p>
-                            <p className="mt-1 font-medium text-slate-450">Mobile: {ord.shippingAddress.phone}</p>
-                          </div>
-                          <div>
-                            <h4 className="font-black text-slate-800 uppercase text-[9px] tracking-wider mb-2">
-                              Items Ordered
-                            </h4>
-                            <div className="divide-y divide-slate-100 border border-slate-150 rounded-xl overflow-hidden bg-white">
-                              {ord.items.map((item) => (
-                                <div key={item.productId} className="flex justify-between items-center p-3 text-[11px]">
-                                  <span>{item.name} (Qty: {item.quantity} - {item.color})</span>
-                                  <span className="font-black text-slate-900">{formatPrice(item.price * item.quantity)}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
+                </thead>
+                <tbody>
+                  {orders.map((order) => (
+                    <tr key={order.id} className="border-b hover:bg-gray-50">
+                      <td className="px-6 py-4 text-sm font-mono text-gray-600">{order.id}</td>
+                      <td className="px-6 py-4 text-sm">
+                        <p className="font-medium">{order.userId}</p>
+                      </td>
+                      <td className="px-6 py-4 text-sm font-semibold">₹{order.totalPrice}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{order.items.length} items</td>
+                      <td className="px-6 py-4">
+                        <span className={`px-3 py-1 rounded text-sm font-medium ${statusColors[order.status] || 'bg-gray-100'}`}>
+                          {order.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4">
+                        <button
+                          onClick={() => setSelectedOrder(selectedOrder === order.id ? null : order.id)}
+                          className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                        >
+                          {selectedOrder === order.id ? 'Close' : 'Edit'}
+                        </button>
                       </td>
                     </tr>
-                  )}
-                </>
-              );
-            })}
-            {orders.length === 0 && (
-              <tr>
-                <td colSpan={7} className="py-8 text-center text-slate-405 font-bold">
-                  No orders placed yet. Check out some mobile covers or audio earbuds in shop to test!
-                </td>
-              </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Status Update Section */}
+            {selectedOrder && (
+              <div className="bg-gray-50 border-t p-6">
+                <h3 className="font-bold mb-4">Update Order Status</h3>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                  {['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'].map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => handleStatusChange(selectedOrder, status)}
+                      className={`px-3 py-2 rounded text-sm font-medium transition ${
+                        status === 'cancelled'
+                          ? 'bg-red-100 hover:bg-red-200 text-red-700'
+                          : 'bg-blue-100 hover:bg-blue-200 text-blue-700'
+                      }`}
+                    >
+                      {status}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
-          </tbody>
-        </table>
+          </div>
+        ) : (
+          <div className="text-center py-12 bg-gray-50 rounded-lg">
+            <p className="text-gray-600">No orders found</p>
+          </div>
+        )}
+
+        {/* Back Button */}
+        <div className="mt-8">
+          <a href="/admin/dashboard" className="text-blue-600 hover:text-blue-800 font-medium">
+            ← Back to Dashboard
+          </a>
+        </div>
       </div>
-    </div>
+    </Container>
   );
 }

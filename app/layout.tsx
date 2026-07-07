@@ -1,15 +1,8 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+
+import { AppShell } from "@/components/layout/AppShell";
 
 import "./globals.css";
-
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: {
@@ -17,7 +10,12 @@ export const metadata: Metadata = {
     template: "%s | Raghav Mobile Accessories",
   },
   description:
-    "Premium Mobile Accessories Store for Covers, Chargers, Earbuds, Power Banks, Tempered Glass and more.",
+    "Premium mobile accessories ecommerce store for cases, chargers, earbuds, power banks, screen protectors and desk essentials.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -26,15 +24,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${inter.className} bg-white text-slate-900 antialiased min-h-screen flex flex-col`}
-      >
-        <Navbar />
-
-        <main className="flex-grow">{children}</main>
-
-        <Footer />
+    <html lang="en" data-scroll-behavior="smooth">
+      <body className="flex min-h-screen flex-col bg-white text-slate-950 antialiased">
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

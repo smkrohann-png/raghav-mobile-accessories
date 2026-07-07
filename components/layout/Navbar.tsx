@@ -1,454 +1,317 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import Image from "next/image";
 
 import {
   Menu,
-  X,
   Search,
-  ShoppingCart,
-  Heart,
-  User,
-  Truck,
-  BadgePercent,
-  ShieldCheck,
-  LogOut,
-  Sliders,
+  ShoppingBag,
+  UserRound,
+  X,
+  Shield,
 } from "lucide-react";
 
-import { NAV_LINKS, USER_MENU } from "@/constants/nav-links";
-import { SITE_CONFIG } from "@/constants/site";
-import { useCartStore } from "@/store/cart-store";
-import { useWishlistStore } from "@/store/wishlist-store";
-import { useAuthStore } from "@/store/auth-store";
+import { AnimatePresence, motion } from "framer-motion";
 
-export default function Navbar() {
-  const pathname = usePathname();
-  const router = useRouter();
+import { Container } from "@/components/ui/Container";
+import NavLink from "@/components/ui/NavLink";
+import { useAuthStore } from "@/store/auth";
 
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
+const links = [
+  { href: "/", label: "Home" },
+  { href: "/products", label: "Products" },
+  { href: "/explore", label: "Book Repair" },
+  { href: "/reviews", label: "Reviews" },
+  { href: "/support", label: "Contact" },
+];
+
+export function Navbar() {
+  const [mobileOpen, setMobileOpen] =
+    useState(false);
+  const [showNavbar, setShowNavbar] = useState(true);
+  const lastScrollY = useRef(0);
+  const { user, checkAuth } = useAuthStore();
   const [mounted, setMounted] = useState(false);
 
-  // Connect stores
-  const cartItems = useCartStore((state) => state.items);
-  const wishlistItems = useWishlistStore((state) => state.items);
-  const { user, isAuthenticated, logout } = useAuthStore();
-
-  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
-  const wishlistCount = wishlistItems.length;
-useEffect(() => {
-  requestAnimationFrame(() => {
+  useEffect(() => {
     setMounted(true);
-  });
+    checkAuth();
+  }, []);
 
-  const onScroll = () => {
-    setScrolled(window.scrollY > 10);
-  };
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY < 50) {
+        setShowNavbar(true);
+      } else if (currentScrollY > lastScrollY.current) {
+        setShowNavbar(false);
+      } else {
+        setShowNavbar(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
 
-  window.addEventListener("scroll", onScroll);
-
-  return () => {
-    window.removeEventListener("scroll", onScroll);
-  };
-}, []);
-useEffect(() => {
-  requestAnimationFrame(() => {
-    setMobileOpen(false);
-    setShowProfileMenu(false);
-  });
-}, [pathname]);
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-    }
-  };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <div className="sticky top-0 z-50">
-      {/* Announcement */}
-      <div className="hidden lg:block bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 text-white">
-        <div className="container flex h-10 items-center justify-between gap-6 text-[11px] font-semibold tracking-[0.18em]">
-          <div className="flex items-center gap-2">
-            <Truck size={14} />
-            <span>FREE SHIPPING ABOVE ₹499 IN INDIA</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <BadgePercent size={14} />
-            <span>USE COUPON: SUMMER40 FOR 40% OFF</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <ShieldCheck size={14} />
-            <span>100% ORIGINAL ACCESSORIES BRAND WARRANTY</span>
-          </div>
-        </div>
-      </div>
 
-      <header
-        className={`w-full transition-all duration-300 ${
-          scrolled
-            ? "border-b border-slate-100 bg-white/95 shadow-md backdrop-blur-xl"
-            : "bg-white"
-        }`}
-      >
-        <div className="container">
-          <div className="flex min-h-20 items-center justify-between gap-4 py-4 lg:grid lg:grid-cols-[220px_minmax(0,1fr)_320px] lg:gap-8">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-3 select-none">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-xl font-black text-white shadow-md shadow-orange-500/20">
-                R
-              </div>
-              <div>
-                <h2 className="text-xl font-black tracking-tight text-slate-900 leading-tight">
-                  {SITE_CONFIG.shortName}
-                </h2>
-                <p className="text-[10px] font-bold text-slate-400 tracking-wide uppercase">
-                  Mobile Lifestyle
-                </p>
-              </div>
-            </Link>
+    <header className={`sticky top-0 z-50 transition-transform duration-300 ease-out ${showNavbar ? "translate-y-0" : "-translate-y-full"} bg-[#111827] shadow-xl shadow-black/20`}>
 
-            {/* Navigation */}
-            <nav className="hidden min-w-0 justify-center lg:flex">
-              <div className="flex max-w-full items-center gap-1 rounded-full border border-slate-100 bg-slate-50/80 p-1 shadow-inner">
-                {NAV_LINKS.map((item) => {
-                  const active = pathname === item.href;
-                  return (
-                    <Link key={item.href} href={item.href} className="relative">
-                      {active && (
-                        <motion.div
-                          layoutId="navbar-active"
-                          transition={{
-                            type: "spring",
-                            stiffness: 380,
-                            damping: 30,
-                          }}
-                          className="absolute inset-0 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 shadow-md shadow-orange-500/10"
-                        />
-                      )}
-                      <span
-                        className={`relative z-10 flex h-10 items-center rounded-full px-4 xl:px-6 text-[14px] font-semibold transition-colors ${
-                          active
-                            ? "text-white"
-                            : "text-slate-600 hover:text-orange-500"
-                        }`}
-                      >
-                        {item.label}
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </nav>
+     {/* ================= Announcement Bar ================= */}
 
-            {/* Right Side Actions */}
-            <div className="hidden items-center justify-end gap-3 lg:flex">
-              {/* Search Bar */}
-              <form onSubmit={handleSearchSubmit} className="relative">
-                <Search
-                  size={16}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                />
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-11 w-52 rounded-full border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm font-medium text-slate-800 transition-all focus:w-60 focus:border-orange-500 focus:bg-white"
-                />
-              </form>
+<div className="hidden h-10 items-center justify-center bg-gradient-to-r from-orange-600 via-orange-500 to-orange-600 text-white sm:flex">
+  <p className="text-sm font-semibold tracking-wide">
+    🚚 Free Shipping on Orders Above ₹999 • 100% Genuine Products • Fast Delivery
+  </p>
+</div>
 
-              {/* Wishlist Icon */}
-              <Link
-                href="/wishlist"
-                className="group relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-150 bg-white transition hover:-translate-y-0.5 hover:border-orange-500 hover:bg-orange-50"
-              >
-                <Heart
-                  size={18}
-                  className="text-slate-600 transition group-hover:text-orange-500"
-                />
-                {mounted && wishlistCount > 0 && (
-                  <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-orange-500 text-[9px] font-bold text-white shadow-md shadow-orange-500/20 animate-pulse">
-                    {wishlistCount}
-                  </span>
-                )}
-              </Link>
+<div className="flex h-9 items-center justify-center bg-gradient-to-r from-orange-600 via-orange-500 to-orange-600 px-4 text-center text-[11px] font-semibold text-white sm:hidden">
+  🚚 Free Shipping • COD Available
+</div>
+      <Container className="max-w-none bg-white px-4 sm:px-5 lg:px-6 2xl:px-8">
 
-              {/* Cart Icon */}
-              <Link
-                href="/cart"
-                className="group relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-150 bg-white transition hover:-translate-y-0.5 hover:border-orange-500 hover:bg-orange-50"
-              >
-                <ShoppingCart
-                  size={18}
-                  className="text-slate-600 transition group-hover:text-orange-500"
-                />
-                {mounted && cartCount > 0 && (
-                  <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-[9px] font-bold text-white shadow-md shadow-orange-500/20">
-                    {cartCount}
-                  </span>
-                )}
-              </Link>
+        <div className="flex h-18 min-h-18 items-center justify-between gap-3 pt-3 pb-2 sm:h-20 lg:gap-6">
 
-              {/* Authentication Dropdown */}
-              {mounted && isAuthenticated && user ? (
-                <div className="relative">
-                  <button
-                    onClick={() => setShowProfileMenu(!showProfileMenu)}
-                    className="flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1 hover:border-orange-500 transition"
-                  >
-                    {user.avatar ? (
-                      <Image
-  src={user.avatar}
-  alt={user.name}
-  width={32}
-  height={32}
-  className="h-8 w-8 rounded-full object-cover"
-/>
-                    ) : (
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-sm font-bold text-orange-600">
-                        {user.name.charAt(0)}
-                      </div>
-                    )}
-                    <span className="max-w-[80px] truncate text-xs font-semibold text-slate-700 pr-2">
-                      {user.name.split(" ")[0]}
-                    </span>
-                  </button>
+          {/* Logo */}
 
-                  <AnimatePresence>
-                    {showProfileMenu && (
-                      <>
-                        <div
-                          onClick={() => setShowProfileMenu(false)}
-                          className="fixed inset-0 z-10 bg-transparent"
-                        />
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 10 }}
-                          className="absolute right-0 mt-2 w-52 rounded-2xl border border-slate-100 bg-white p-2 shadow-xl z-20"
-                        >
-                          <div className="px-4 py-2 border-b border-slate-50 mb-1">
-                            <p className="text-xs font-bold text-slate-800">
-                              {user.name}
-                            </p>
-                            <p className="text-[10px] text-slate-400 truncate">
-                              {user.email}
-                            </p>
-                          </div>
+          <Link
+            href="/"
+            className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-3"
+          >
 
-                          {user.role === "admin" && (
-                            <Link
-                              href="/admin/dashboard"
-                              className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-orange-500 transition"
-                            >
-                              <Sliders size={14} />
-                              Admin Dashboard
-                            </Link>
-                          )}
+            <motion.div
+              whileHover={{
+                rotate: 8,
+                scale: 1.05,
+              }}
+              transition={{
+                duration: .25,
+              }}
+              className="grid h-10 w-10 place-items-center rounded-2xl bg-[linear-gradient(135deg,_#111827_50%,_#f97316_50%)] text-lg font-black text-white shadow-lg sm:h-12 sm:w-12 sm:text-xl"
+            >
+              R
+            </motion.div>
 
-                          {USER_MENU.map((item) => (
-                            <Link
-                              key={item.href}
-                              href={item.href}
-                              className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-orange-500 transition"
-                            >
-                              <User size={14} />
-                              {item.label}
-                            </Link>
-                          ))}
-
-                          <button
-                            onClick={() => {
-                              logout();
-                              router.push("/");
-                            }}
-                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-red-500 hover:bg-red-50 transition"
-                          >
-                            <LogOut size={14} />
-                            Log Out
-                          </button>
-                        </motion.div>
-                      </>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ) : (
-                <Link
-                  href="/login"
-                  className="flex h-10 items-center gap-2 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 px-6 text-xs font-semibold text-white shadow-md shadow-orange-500/10 hover:shadow-lg transition-all"
-                >
-                  <User size={14} />
-                  Login
-                </Link>
-              )}
+            <div className="min-w-0 leading-none">
+              <h2 className="truncate text-[15px] font-black uppercase tracking-[0.1em] text-slate-950 sm:text-[18px] sm:tracking-[0.14em]">
+                RAGHAV
+              </h2>
+              <p className="mt-1 text-[12px] font-semibold tracking-wide text-orange-600">
+                Mobile Accessories
+              </p>
             </div>
 
-            {/* Mobile Actions and Menu Trigger */}
-            <div className="flex items-center gap-3 lg:hidden">
-              <Link
-                href="/cart"
-                className="relative flex h-9 w-9 items-center justify-center rounded-full bg-slate-100"
-              >
-                <ShoppingCart size={16} className="text-slate-700" />
-                {mounted && cartCount > 0 && (
-                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[8px] font-bold text-white">
-                    {cartCount}
-                  </span>
-                )}
-              </Link>
+          </Link>
+          {/* ================= Desktop Navigation ================= */}
 
-              <button
-                onClick={() => setMobileOpen(!mobileOpen)}
-                className="rounded-xl bg-slate-100 p-1.5 transition"
-              >
-                {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-              </button>
+          <nav
+            className="hidden flex-1 items-center justify-center xl:flex"
+            aria-label="Primary Navigation"
+          >
+            <div className="flex items-center gap-8">
+
+              {links.map((item) => (
+
+                <NavLink
+                  key={item.href}
+                  href={item.href}
+                  label={item.label}
+                />
+
+              ))}
+
             </div>
-          </div>
-        </div>
+          </nav>
 
-        {/* Mobile Sidebar */}
-        <AnimatePresence>
-          {mobileOpen && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setMobileOpen(false)}
-                className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
+          {/* ================= Right Side ================= */}
+
+          <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+            <form action="/search" method="get" className="hidden relative h-11 w-[min(28vw,320px)] rounded-full border border-slate-200 bg-white shadow-sm lg:flex">
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-orange-600" />
+              <input
+                type="search"
+                name="q"
+                placeholder="Search accessories..."
+                className="h-full w-full rounded-full border-none bg-transparent pl-12 pr-4 text-base font-semibold text-slate-700 outline-none placeholder:text-slate-400"
               />
+            </form>
 
-              <motion.div
-                initial={{ x: "100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "100%" }}
-                transition={{
-                  duration: 0.35,
-                  ease: "easeInOut",
-                }}
-                className="fixed right-0 top-0 z-50 flex h-screen w-[85%] max-w-sm flex-col bg-white shadow-2xl lg:hidden"
-              >
-                <div className="flex items-center justify-between border-b border-slate-100 p-6">
-                  <div>
-                    <h2 className="text-lg font-black text-slate-800">
-                      {SITE_CONFIG.shortName}
-                    </h2>
-                    <p className="text-[10px] font-semibold text-slate-400">
-                      Premium Mobile Accessories
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setMobileOpen(false)}
-                    className="rounded-full bg-slate-100 p-1.5"
+            {mounted && user?.role === 'admin' && (
+              <IconButton
+                href="/admin/dashboard"
+                label="Admin Panel"
+                icon={<Shield className="h-5 w-5" />}
+                className="hidden sm:grid !bg-gradient-to-br !from-red-500 !to-red-600 !border-red-500 !text-white hover:!from-red-600 hover:!to-red-700 hover:!border-red-600 hover:shadow-lg hover:shadow-red-500/30"
+              />
+            )}
+
+            <IconButton
+              href="/search"
+              label="Search products"
+              icon={<Search className="h-5 w-5" />}
+              className="lg:hidden"
+            />
+
+            <IconButton
+              href="/cart"
+              label="Cart"
+              icon={<ShoppingBag className="h-5 w-5" />}
+            />
+
+            <IconButton
+  href="/profile"
+  label="Profile"
+  icon={<UserRound className="h-5 w-5" />}
+  className="hidden sm:grid !bg-gradient-to-br !from-orange-500 !to-orange-600 !border-orange-500 !text-white hover:!from-orange-600 hover:!to-orange-700 hover:!border-orange-600 hover:shadow-lg hover:shadow-orange-500/30"
+/>
+
+            {/* Mobile Toggle */}
+
+            <motion.button
+              whileTap={{ scale: .9 }}
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label="Menu"
+              className="grid h-10 w-10 place-items-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600 sm:h-11 sm:w-11 xl:hidden"
+            >
+
+              <AnimatePresence mode="wait">
+
+                {mobileOpen ? (
+
+                  <motion.div
+                    key="close"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: .2 }}
                   >
-                    <X size={20} />
-                  </button>
-                </div>
 
-                <div className="flex-1 overflow-y-auto p-6">
-                  {/* Search */}
-                  <form onSubmit={handleSearchSubmit} className="relative mb-6">
-                    <Search
-                      size={16}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Search items..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="h-10 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-xs font-semibold text-slate-800 outline-none"
-                    />
-                  </form>
+                    <X className="h-5 w-5" />
 
-                  <h3 className="mb-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
-                    Navigation Links
-                  </h3>
-                  <nav className="flex flex-col gap-1 mb-8">
-                    {NAV_LINKS.map((item) => {
-                      const active = pathname === item.href;
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          className={`rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
-                            active
-                              ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white"
-                              : "text-slate-700 hover:bg-orange-50 hover:text-orange-600"
-                          }`}
-                        >
-                          {item.label}
-                        </Link>
-                      );
-                    })}
-                  </nav>
+                  </motion.div>
 
-                  {mounted && isAuthenticated && user && (
-                    <>
-                      <h3 className="mb-3 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
-                        Account Settings
-                      </h3>
-                      <nav className="flex flex-col gap-1">
-                        {user.role === "admin" && (
-                          <Link
-                            href="/admin/dashboard"
-                            className="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
-                          >
-                            Admin Dashboard
-                          </Link>
-                        )}
-                        {USER_MENU.map((item) => (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            className="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
-                          >
-                            {item.label}
-                          </Link>
-                        ))}
-                      </nav>
-                    </>
+                ) : (
+
+                  <motion.div
+                    key="menu"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                    transition={{ duration: .2 }}
+                  >
+
+                    <Menu className="h-5 w-5" />
+
+                  </motion.div>
+
+                )}
+
+              </AnimatePresence>
+
+            </motion.button>
+
+          </div>
+
+        </div>
+
+        {/* ================= Mobile Menu ================= */}
+
+        <AnimatePresence>
+
+          {mobileOpen && (
+
+            <motion.div
+              initial={{ opacity: 0, y: -18, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -18, scale: 0.98 }}
+              transition={{ duration: .22, ease: "easeOut" }}
+              className="mb-4 overflow-hidden rounded-3xl border border-white/80 bg-white/92 shadow-2xl shadow-slate-950/10 backdrop-blur-2xl xl:hidden"
+            >
+
+              <div className="grid gap-1 p-3">
+
+                {links.map((item) => (
+
+                  <MobileNavItem
+                    key={item.href}
+                    href={item.href}
+                    label={item.label}
+                    onClick={() => setMobileOpen(false)}
+                  />
+
+                ))}
+
+                <div className="mt-2 grid grid-cols-2 gap-2 border-t border-slate-100 pt-3">
+                  <MobileNavItem href="/profile" label="Profile" onClick={() => setMobileOpen(false)} compact />
+                  <MobileNavItem href="/cart" label="Cart" onClick={() => setMobileOpen(false)} compact />
+                  {user?.role === 'admin' && (
+                    <MobileNavItem href="/admin/dashboard" label="Admin" onClick={() => setMobileOpen(false)} compact icon={Shield} />
+                  )}
+                  {!user && (
+                    <MobileNavItem href="/login" label="Login" onClick={() => setMobileOpen(false)} compact />
                   )}
                 </div>
 
-                <div className="border-t border-slate-100 p-6">
-                  {mounted && isAuthenticated ? (
-                    <button
-                      onClick={() => {
-                        logout();
-                        router.push("/");
-                        setMobileOpen(false);
-                      }}
-                      className="flex w-full items-center justify-center gap-2 rounded-2xl bg-red-500 py-3.5 text-sm font-semibold text-white shadow-md shadow-red-500/10"
-                    >
-                      <LogOut size={16} />
-                      Log Out
-                    </button>
-                  ) : (
-                    <Link
-                      href="/login"
-                      className="flex items-center justify-center rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 py-3.5 text-sm font-semibold text-white shadow-md shadow-orange-500/10"
-                    >
-                      Login Account
-                    </Link>
-                  )}
-                </div>
-              </motion.div>
-            </>
+              </div>
+
+            </motion.div>
+
           )}
-      </AnimatePresence>
-      </header>
 
-    </div>
+        </AnimatePresence>
+
+      </Container>
+
+    </header>
+  );
+}
+
+function MobileNavItem({
+  href,
+  label,
+  onClick,
+  compact = false,
+  icon: Icon,
+}: {
+  href: string;
+  label: string;
+  onClick: () => void;
+  compact?: boolean;
+  icon?: React.ComponentType<any>;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className={`rounded-2xl text-[15px] font-semibold text-slate-700 transition hover:bg-orange-50 hover:text-orange-600 flex items-center justify-center gap-2 ${compact ? "px-4 py-3 text-center" : "px-5 py-4"}`}
+    >
+      {Icon && <Icon className="h-4 w-4" />}
+      {label}
+    </Link>
+  );
+}
+
+function IconButton({
+  href,
+  label,
+  icon,
+  className,
+}: {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-label={label}
+      className={`relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full border border-slate-200 bg-white text-slate-700 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md sm:h-11 sm:w-11 ${className ?? ""}`}
+    >
+      <span>{icon}</span>
+    </Link>
   );
 }

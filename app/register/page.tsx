@@ -1,8 +1,22 @@
-"use client";
+import Link from "next/link";
 
-import LoginPage from "../login/page";
+import { AuthPanel } from "@/components/auth/AuthPanel";
+import { Container } from "@/components/ui/Container";
+import { Section } from "@/components/ui/Section";
+
+export const metadata = {
+  title: "Register",
+};
 
 export default function RegisterPage() {
-  // Renders the login page which dynamically supports sign-up tabs
-  return <LoginPage />;
+  return (
+    <Section muted>
+      <Container className="max-w-5xl">
+        <AuthPanel mode="register" />
+        <p className="mt-5 text-center text-sm font-semibold text-slate-600">
+          Already registered? <Link href="/login" className="text-orange-600">Login</Link>
+        </p>
+      </Container>
+    </Section>
+  );
 }

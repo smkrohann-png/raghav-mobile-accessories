@@ -1,429 +1,209 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useCartStore } from "@/store/cart-store";
-import { useAuthStore } from "@/store/auth-store";
-import { formatPrice } from "@/lib/utils";
-import { openRazorpayCheckout } from "@/services/razorpay";
-import { createShiprocketOrder } from "@/services/shiprocket";
-import { saveStoredOrder } from "@/services/mock-db";
-import { Address, Order, OrderItem } from "@/types";
-import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
-import { ShieldCheck, Truck, CreditCard } from "lucide-react";
+import { HandCoins, PackageCheck, ShieldCheck, Truck } from "lucide-react";
+
+import { useAuthStore } from "@/store/auth";
+import { useCartStore } from "@/store/cart";
+import { useProfileStore } from "@/store/profile";
+import { formatCurrency } from "@/lib/utils";
+import { Button } from "@/components/ui/Button";
+import { Container } from "@/components/ui/Container";
+import { Input } from "@/components/ui/Input";
+import { Section } from "@/components/ui/Section";
+import { SectionTitle } from "@/components/ui/SectionTitle";
+
+type CheckoutResponse = {
+  order: {
+    id: string;
+    amount: number;
+    paymentMethod: "Cash On Delivery";
+    shippingProvider?: "Shiprocket";
+    shippingStatus?: string;
+  };
+};
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
-
-  // Form Fields
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [line1, setLine1] = useState("");
-  const [line2, setLine2] = useState("");
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("");
-  const [pincode, setPincode] = useState("");
-  const [shippingMethod, setShippingMethod] = useState("Standard");
-  const [paymentMethod, setPaymentMethod] = useState<"cod" | "razorpay">("razorpay");
+  const { user, isAuthenticated, checkAuth } = useAuthStore();
+  const { cart, fetchCart, getTotalPrice } = useCartStore();
+  const { addresses, fetchAddresses, addAddress } = useProfileStore();
+  const [selectedAddressId, setSelectedAddressId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [error, setError] = useState("");
+  const subtotal = getTotalPrice();
+  const delivery = subtotal > 0 && subtotal < 3000 ? 99 : 0;
+  const total = subtotal + delivery;
 
-  const { items, coupon, clearCart, getTotals } = useCartStore();
-  const { user } = useAuthStore();
-  const { subtotal, discount, shipping, total } = getTotals();
-
-  // Shipping Adjustment
-  const shippingCharge = shippingMethod === "Express" ? shipping + 50 : shipping;
-  const grandTotal = total + (shippingMethod === "Express" && shipping === 0 ? 50 : 0);
+  const defaultAddress = useMemo(() => addresses.find((address) => address.isDefault) || addresses[0], [addresses]);
+  const effectiveAddressId = selectedAddressId || defaultAddress?.id || "";
 
   useEffect(() => {
-    setMounted(true);
-    if (user) {
-      setName(user.name);
-      setPhone(user.phone || "");
-      if (user.addresses.length > 0) {
-        const addr = user.addresses[0];
-        setLine1(addr.line1);
-        setLine2(addr.line2 || "");
-        setCity(addr.city);
-        setState(addr.state);
-        setPincode(addr.pincode);
-      }
-    }
-  }, [user]);
+    checkAuth().then(() => {
+      fetchCart();
+      fetchAddresses();
+    });
+  }, [checkAuth, fetchAddresses, fetchCart]);
 
-  if (!mounted) {
-    return (
-      <div className="container py-24 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-orange-500" />
-      </div>
-    );
-  }
-
-  if (items.length === 0) {
-    return (
-      <div className="container py-24 text-center">
-        <h2 className="text-xl font-bold text-slate-800">Your Cart is Empty</h2>
-        <p className="text-xs text-slate-500 mt-2">Add accessories to your cart before checking out.</p>
-        <Button onClick={() => router.push("/shop")} className="mt-6 rounded-full">
-          Back to Shop
-        </Button>
-      </div>
-    );
-  }
-
-  const handlePlaceOrder = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg("");
-
-    if (!name || !phone || !line1 || !city || !state || !pincode) {
-      setErrorMsg("Please complete all shipping address fields.");
-      return;
-    }
-
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
     setIsSubmitting(true);
 
-    const shippingAddress: Address = {
-      name,
-      phone,
-      line1,
-      line2,
-      city,
-      state,
-      pincode,
-      country: "India",
-    };
+    try {
+      const formData = new FormData(event.currentTarget);
+      let addressId = effectiveAddressId;
 
-    const orderItems: OrderItem[] = items.map((item) => ({
-      productId: item.product.id,
-      name: item.product.name,
-      price: item.product.price,
-      quantity: item.quantity,
-      image: item.product.images[0],
-      color: item.selectedColor,
-    }));
-
-    const finalOrderId = `ord_${Math.random().toString(36).substr(2, 9)}`;
-
-    // Prepare complete Razorpay integration
-    if (paymentMethod === "razorpay") {
-      try {
-        await openRazorpayCheckout({
-          amount: grandTotal,
-          email: user?.email || "customer@example.com",
-          phone: phone,
-          userName: name,
-          onSuccess: async (paymentId) => {
-            // Shiprocket Integration
-            const srRes = await createShiprocketOrder({
-              orderId: finalOrderId,
-              orderDate: new Date().toISOString(),
-              items: orderItems,
-              shippingAddress,
-              totalAmount: grandTotal,
-            });
-
-            const newOrder: Order = {
-              id: finalOrderId,
-              userId: user?.id || "guest",
-              items: orderItems,
-              shippingAddress,
-              paymentMethod: "razorpay",
-              paymentStatus: "paid",
-              paymentId,
-              shippingMethod,
-              shippingCharge,
-              discount,
-              subtotal,
-              total: grandTotal,
-              status: "processing",
-              shiprocketId: srRes.shiprocketOrderId,
-              trackingNumber: srRes.awbNumber,
-              createdAt: new Date().toISOString(),
-            };
-
-            saveStoredOrder(newOrder);
-            clearCart();
-            setIsSubmitting(false);
-            router.push(`/checkout/success?id=${finalOrderId}`);
-          },
-          onFailure: (error) => {
-            setErrorMsg(error || "Payment transaction failed.");
-            setIsSubmitting(false);
-          },
+      if (!addressId) {
+        await addAddress({
+          fullName: String(formData.get("fullName")),
+          phone: String(formData.get("phone")),
+          street: String(formData.get("street")),
+          city: String(formData.get("city")),
+          state: String(formData.get("state")),
+          pincode: String(formData.get("pincode")),
+          isDefault: addresses.length === 0,
         });
-      } catch (err: any) {
-        setErrorMsg(err.message || "Something went wrong opening Razorpay checkout.");
-        setIsSubmitting(false);
+        await fetchAddresses();
+        const latest = useProfileStore.getState().addresses.at(-1);
+        addressId = latest?.id || "";
       }
-    } else {
-      // Cash on Delivery
-      try {
-        const srRes = await createShiprocketOrder({
-          orderId: finalOrderId,
-          orderDate: new Date().toISOString(),
-          items: orderItems,
-          shippingAddress,
-          totalAmount: grandTotal,
-        });
 
-        const newOrder: Order = {
-          id: finalOrderId,
-          userId: user?.id || "guest",
-          items: orderItems,
-          shippingAddress,
-          paymentMethod: "cod",
-          paymentStatus: "pending",
-          shippingMethod,
-          shippingCharge,
-          discount,
-          subtotal,
-          total: grandTotal,
-          status: "pending",
-          shiprocketId: srRes.shiprocketOrderId,
-          trackingNumber: srRes.awbNumber,
-          createdAt: new Date().toISOString(),
-        };
-
-        saveStoredOrder(newOrder);
-        clearCart();
-        setIsSubmitting(false);
-        router.push(`/checkout/success?id=${finalOrderId}`);
-      } catch (err: any) {
-        setErrorMsg("Failed to generate cash-on-delivery order receipt.");
-        setIsSubmitting(false);
+      if (!addressId) {
+        throw new Error("Please add or select a delivery address");
       }
+
+      const checkout = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ addressId }),
+      });
+      const checkoutData = (await checkout.json()) as CheckoutResponse & { error?: string };
+
+      if (!checkout.ok) {
+        throw new Error(checkoutData.error || "Checkout failed");
+      }
+
+      router.push(`/checkout/success?order=${checkoutData.order.id}`);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Checkout failed");
+    } finally {
+      setIsSubmitting(false);
     }
-  };
+  }
 
   return (
-    <div className="container py-8">
-      <h1 className="text-3xl font-black text-slate-900 mb-8">Checkout Details</h1>
-
-      <form onSubmit={handlePlaceOrder} className="grid gap-8 lg:grid-cols-[1fr_380px]">
-        {/* Shipping Form */}
-        <div className="flex flex-col gap-6">
-          <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
-            <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider mb-5 flex items-center gap-1.5">
-              <Truck size={16} className="text-orange-500" />
-              Shipping Address
-            </h3>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Input
-                label="Full Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Receiver name"
-                required
-              />
-              <Input
-                label="Phone Number"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="Mobile number"
-                required
-              />
-              <div className="sm:col-span-2">
-                <Input
-                  label="Address Line 1"
-                  value={line1}
-                  onChange={(e) => setLine1(e.target.value)}
-                  placeholder="Flat, House no., Building, Company"
-                  required
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <Input
-                  label="Address Line 2 (Optional)"
-                  value={line2}
-                  onChange={(e) => setLine2(e.target.value)}
-                  placeholder="Area, Street, Sector, Village"
-                />
-              </div>
-              <Input
-                label="City"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="City Name"
-                required
-              />
-              <Input
-                label="State"
-                value={state}
-                onChange={(e) => setState(e.target.value)}
-                placeholder="State Name"
-                required
-              />
-              <div className="sm:col-span-2">
-                <Input
-                  label="Pincode"
-                  value={pincode}
-                  onChange={(e) => setPincode(e.target.value)}
-                  placeholder="6 digit PIN code"
-                  required
-                />
-              </div>
-            </div>
+    <Section muted>
+      <Container>
+        <SectionTitle eyebrow="Checkout" title="Complete your COD order." description="Your cart, delivery address and admin-visible order timeline are connected." />
+        {!isAuthenticated ? (
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="font-bold text-slate-950">Login required</p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">Login first so COD order and delivery updates can be attached to your account.</p>
+            <Button href="/login" className="mt-5">Login to checkout</Button>
           </div>
-
-          {/* Shipping Method */}
-          <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
-            <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider mb-5">
-              Delivery Method
-            </h3>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label
-                className={`flex items-start gap-3 rounded-2xl border p-4 cursor-pointer transition ${
-                  shippingMethod === "Standard" ? "border-orange-500 bg-orange-50/10" : "border-slate-200"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="shipping"
-                  value="Standard"
-                  checked={shippingMethod === "Standard"}
-                  onChange={() => setShippingMethod("Standard")}
-                  className="mt-1 accent-orange-500"
-                />
-                <div>
-                  <p className="text-xs font-bold text-slate-800">Standard Delivery</p>
-                  <p className="text-[10px] text-slate-400 font-semibold mt-0.5">3-5 days delivery (FREE above ₹499)</p>
+        ) : null}
+        <div className="grid gap-6 lg:grid-cols-[1fr_0.42fr]">
+          <form onSubmit={handleSubmit} className="space-y-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <PanelTitle title="Delivery address" />
+            {addresses.length ? (
+              <div className="grid gap-3">
+                {addresses.map((address) => (
+                  <label className={`block rounded-2xl border p-4 text-sm transition ${effectiveAddressId === address.id ? "border-orange-300 bg-orange-50 ring-4 ring-orange-100" : "border-slate-200"}`} key={address.id}>
+                    <input className="mr-2 accent-orange-600" type="radio" name="addressId" checked={effectiveAddressId === address.id} onChange={() => setSelectedAddressId(address.id)} />
+                    <strong>{address.fullName}</strong> - {address.street}, {address.city}, {address.state} {address.pincode}
+                  </label>
+                ))}
+              </div>
+            ) : null}
+            {!effectiveAddressId ? (
+              <>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Input name="fullName" placeholder="Full name" defaultValue={user ? `${user.firstName} ${user.lastName}` : ""} required />
+                  <Input name="phone" placeholder="Phone" defaultValue={user?.phone || ""} required />
                 </div>
-              </label>
-
-              <label
-                className={`flex items-start gap-3 rounded-2xl border p-4 cursor-pointer transition ${
-                  shippingMethod === "Express" ? "border-orange-500 bg-orange-50/10" : "border-slate-200"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="shipping"
-                  value="Express"
-                  checked={shippingMethod === "Express"}
-                  onChange={() => setShippingMethod("Express")}
-                  className="mt-1 accent-orange-500"
-                />
-                <div>
-                  <p className="text-xs font-bold text-slate-800">Express Delivery</p>
-                  <p className="text-[10px] text-slate-400 font-semibold mt-0.5">1-2 days delivery (+₹50)</p>
+                <Input name="street" placeholder="Address" required />
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <Input name="city" placeholder="City" required />
+                  <Input name="state" placeholder="State" required />
+                  <Input name="pincode" placeholder="PIN code" required />
                 </div>
-              </label>
+              </>
+            ) : null}
+            <PanelTitle title="Payment method" />
+            <div className="rounded-2xl border border-orange-300 bg-orange-50 p-4 ring-4 ring-orange-100">
+              <span className="block font-bold text-slate-950">Cash On Delivery</span>
+              <span className="mt-1 block text-sm leading-6 text-slate-600">Pay only when the order is delivered.</span>
             </div>
-          </div>
-
-          {/* Payment Method */}
-          <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
-            <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider mb-5 flex items-center gap-1.5">
-              <CreditCard size={16} className="text-orange-500" />
-              Select Payment Method
-            </h3>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label
-                className={`flex items-start gap-3 rounded-2xl border p-4 cursor-pointer transition ${
-                  paymentMethod === "razorpay" ? "border-orange-500 bg-orange-50/10" : "border-slate-200"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="payment"
-                  value="razorpay"
-                  checked={paymentMethod === "razorpay"}
-                  onChange={() => setPaymentMethod("razorpay")}
-                  className="mt-1 accent-orange-500"
-                />
-                <div>
-                  <p className="text-xs font-bold text-slate-800">Online Payment (Razorpay)</p>
-                  <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Pay via UPI, Cards, Netbanking instantly</p>
+            {error ? <p className="rounded-2xl bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">{error}</p> : null}
+            <Button disabled={!cart?.items.length || isSubmitting} className="w-full sm:w-auto" size="lg">
+              <HandCoins className="h-5 w-5" />
+              {isSubmitting ? "Placing order..." : `Place COD order ${formatCurrency(total)}`}
+            </Button>
+          </form>
+          <aside className="h-fit rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 className="text-xl font-bold text-slate-950">Order summary</h2>
+            <div className="mt-5 space-y-3">
+              {cart?.items.map((item) => item.product ? (
+                <div className="flex justify-between gap-4 text-sm" key={item.productId}>
+                  <span className="text-slate-600">{item.product.name} x {item.quantity}</span>
+                  <span className="font-bold text-slate-950">{formatCurrency(item.product.price * item.quantity)}</span>
                 </div>
-              </label>
-
-              <label
-                className={`flex items-start gap-3 rounded-2xl border p-4 cursor-pointer transition ${
-                  paymentMethod === "cod" ? "border-orange-500 bg-orange-50/10" : "border-slate-200"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="payment"
-                  value="cod"
-                  checked={paymentMethod === "cod"}
-                  onChange={() => setPaymentMethod("cod")}
-                  className="mt-1 accent-orange-500"
-                />
-                <div>
-                  <p className="text-xs font-bold text-slate-800">Cash on Delivery (COD)</p>
-                  <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Pay in cash when delivered (+₹30 fee)</p>
-                </div>
-              </label>
+              ) : null)}
+              {!cart?.items.length ? <p className="text-sm text-slate-600">Your cart is empty.</p> : null}
             </div>
-          </div>
+            <div className="mt-6 space-y-3 border-t border-slate-200 pt-5 text-sm">
+              <Row label="Subtotal" value={formatCurrency(subtotal)} />
+              <Row label="Delivery" value={delivery === 0 ? "Free" : formatCurrency(delivery)} />
+            </div>
+            <div className="mt-6 flex items-center justify-between border-t border-slate-200 pt-5">
+              <span className="font-bold text-slate-950">Total</span>
+              <span className="text-2xl font-black text-slate-950">{formatCurrency(total)}</span>
+            </div>
+            <div className="mt-6 space-y-4">
+              <Trust icon={Truck} title="Fast dispatch" text="Packed from available local stock." />
+              <Trust icon={ShieldCheck} title="COD only" text="No online payment is collected on the website." />
+              <Trust icon={PackageCheck} title="Order tracking" text="Customer and admin see the same timeline." />
+            </div>
+          </aside>
         </div>
+      </Container>
+    </Section>
+  );
+}
 
-        {/* Checkout Order Summary */}
-        <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm h-fit">
-          <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider mb-5">
-            Order Summary
-          </h3>
+function PanelTitle({ title }: { title: string }) {
+  return <h2 className="pt-2 text-xl font-bold text-slate-950 first:pt-0">{title}</h2>;
+}
 
-          {/* Items Summary list */}
-          <div className="divide-y divide-slate-100 max-h-56 overflow-y-auto mb-5 pr-1">
-            {items.map((item) => (
-              <div key={`${item.product.id}-${item.selectedColor}`} className="flex gap-3 py-3 items-center">
-                <img src={item.product.images[0]} alt={item.product.name} className="h-10 w-10 object-contain rounded-lg border border-slate-100 p-1" />
-                <div className="flex-grow text-[11px] font-bold text-slate-700 min-w-0">
-                  <p className="truncate">{item.product.name}</p>
-                  <p className="text-[9px] text-slate-400 uppercase mt-0.5">Qty: {item.quantity} • {item.selectedColor}</p>
-                </div>
-                <span className="text-xs font-black text-slate-900 flex-shrink-0">
-                  {formatPrice(item.product.price * item.quantity)}
-                </span>
-              </div>
-            ))}
-          </div>
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between text-slate-600">
+      <span>{label}</span>
+      <span className="font-bold text-slate-950">{value}</span>
+    </div>
+  );
+}
 
-          <div className="flex flex-col gap-3 border-t border-b border-slate-100 py-4 mb-5 text-xs font-semibold text-slate-500">
-            <div className="flex justify-between">
-              <span>Subtotal</span>
-              <span className="text-slate-800">{formatPrice(subtotal)}</span>
-            </div>
-            <div className="flex justify-between text-red-500">
-              <span>Coupon Discount</span>
-              <span>-{formatPrice(discount)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Shipping cost</span>
-              <span className="text-slate-800">
-                {shippingCharge === 0 ? "FREE" : formatPrice(shippingCharge)}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex justify-between items-baseline mb-6">
-            <span className="text-sm font-bold text-slate-800">Final Price</span>
-            <span className="text-xl font-black text-orange-500">{formatPrice(grandTotal)}</span>
-          </div>
-
-          {errorMsg && <p className="mb-4 text-xs font-bold text-red-500">{errorMsg}</p>}
-
-          <Button
-            type="submit"
-            variant="primary"
-            className="w-full rounded-2xl h-12 font-bold shadow-md shadow-orange-55"
-            isLoading={isSubmitting}
-          >
-            {paymentMethod === "razorpay" ? "Pay & Confirm Order" : "Confirm COD Order"}
-          </Button>
-
-          <div className="mt-6 flex items-center justify-center gap-2 text-[9px] font-bold text-slate-400">
-            <ShieldCheck size={14} className="text-emerald-500" />
-            <span>Secure Checkout Protected</span>
-          </div>
-        </div>
-      </form>
+function Trust({
+  icon: Icon,
+  title,
+  text,
+}: {
+  icon: typeof Truck;
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="flex gap-3">
+      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-orange-50 text-orange-600">
+        <Icon className="h-5 w-5" />
+      </span>
+      <span>
+        <span className="block font-bold text-slate-950">{title}</span>
+        <span className="block text-sm leading-6 text-slate-600">{text}</span>
+      </span>
     </div>
   );
 }

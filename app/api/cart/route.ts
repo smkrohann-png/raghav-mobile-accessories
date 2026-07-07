@@ -1,0 +1,132 @@
+import { NextResponse } from "next/server";
+import { getSessionFromCookies } from "@/lib/auth";
+import { db } from "@/lib/db/memory";
+import { products } from "@/data/storefront";
+
+// GET user's cart
+export async function GET(req: Request) {
+  try {
+    const session = await getSessionFromCookies();
+    if (!session) {
+      return NextResponse.json(
+        { error: "Not authenticated" },
+        { status: 401 }
+      );
+    }
+
+    let cart = db.getCartByUserId(session.userId);
+    if (!cart) {
+      cart = db.createCart(session.userId);
+    }
+
+    // Map product IDs to full product details
+    const items = cart.items.map((item) => {
+      const product = products.find((p) => p.id === item.productId);
+      return {
+        ...item,
+        product,
+      };
+    });
+
+    return NextResponse.json({
+      id: cart.id,
+      userId: cart.userId,
+      items,
+      updatedAt: cart.updatedAt,
+    });
+  } catch (error) {
+    console.error("Get cart error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch cart" },
+      { status: 500 }
+    );
+  }
+}
+
+// ADD item to cart
+export async function POST(req: Request) {
+  try {
+    const session = await getSessionFromCookies();
+    if (!session) {
+      return NextResponse.json(
+        { error: "Not authenticated" },
+        { status: 401 }
+      );
+    }
+
+    const body = await req.json();
+    const { productId, quantity } = body;
+
+    if (!productId || !quantity || quantity < 1) {
+      return NextResponse.json(
+        { error: "Invalid product or quantity" },
+        { status: 400 }
+      );
+    }
+
+    // Check if product exists
+    const product = products.find((p) => p.id === productId);
+    if (!product) {
+      return NextResponse.json(
+        { error: "Product not found" },
+        { status: 404 }
+      );
+    }
+
+    // Check stock
+    if (product.stock < quantity) {
+      return NextResponse.json(
+        { error: "Insufficient stock" },
+        { status: 400 }
+      );
+    }
+
+    let cart = db.getCartByUserId(session.userId);
+    if (!cart) {
+      cart = db.createCart(session.userId);
+    }
+
+    // Add or update item
+    const existingItem = cart.items.find((item) => item.productId === productId);
+    if (existingItem) {
+      const newQuantity = existingItem.quantity + quantity;
+      if (newQuantity > product.stock) {
+        return NextResponse.json(
+          { error: "Insufficient stock for requested quantity" },
+          { status: 400 }
+        );
+      }
+      existingItem.quantity = newQuantity;
+    } else {
+      cart.items.push({
+        productId,
+        quantity,
+        addedAt: new Date(),
+      });
+    }
+
+    const updatedCart = db.updateCart(cart.id, cart);
+
+    const items = updatedCart.items.map((item) => {
+      const prod = products.find((p) => p.id === item.productId);
+      return {
+        ...item,
+        product: prod,
+      };
+    });
+
+    return NextResponse.json({
+      message: "Item added to cart",
+      cart: {
+        id: updatedCart.id,
+        items,
+      },
+    });
+  } catch (error) {
+    console.error("Add to cart error:", error);
+    return NextResponse.json(
+      { error: "Failed to add item to cart" },
+      { status: 500 }
+    );
+  }
+}

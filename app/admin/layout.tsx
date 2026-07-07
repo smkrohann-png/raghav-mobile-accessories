@@ -1,142 +1,182 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { ReactNode, useEffect, useState } from "react";
 import {
-  SlidersHorizontal,
-  Package,
-  ShoppingBag,
-  Users,
-  Layers,
-  Archive,
-  Ticket,
-  CreditCard,
-  Settings,
-  BarChart3,
-  ArrowLeft,
+  Boxes,
+  ChevronLeft,
+  LayoutDashboard,
+  LogOut,
   Menu,
+  Settings,
+  ShoppingBag,
+  Star,
+  Tags,
+  TicketPercent,
+  Truck,
+  UsersRound,
   X,
-  UserCheck,
 } from "lucide-react";
-import { useAuthStore } from "@/store/auth-store";
-import { SITE_CONFIG } from "@/constants/site";
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
+import { useAuthStore } from "@/store/auth";
+import { cn } from "@/lib/utils";
+
+const navItems = [
+  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/admin/orders", icon: ShoppingBag, label: "Orders" },
+  { href: "/admin/products", icon: Boxes, label: "Products" },
+  { href: "/admin/categories", icon: Tags, label: "Categories" },
+  { href: "/admin/users", icon: UsersRound, label: "Customers" },
+  { href: "/admin/shiprocket", icon: Truck, label: "Shiprocket" },
+  { href: "/admin/reviews", icon: Star, label: "Reviews" },
+  { href: "/admin/coupons", icon: TicketPercent, label: "Coupons" },
+  { href: "/admin/settings", icon: Settings, label: "Settings" },
+];
+
+export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const [mounted, setMounted] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const { user, isAuthenticated } = useAuthStore();
+  const router = useRouter();
+  const { user, isAuthenticated, isLoading, checkAuth, logout } = useAuthStore();
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const isLogin = pathname === "/admin";
 
   useEffect(() => {
-    setMounted(true);
-    if (mounted && (!isAuthenticated || user?.role !== "admin")) {
-      router.push("/login");
-    }
-  }, [isAuthenticated, user, mounted]);
+    checkAuth();
+  }, [checkAuth]);
 
-  if (!mounted || !user || user.role !== "admin") {
-    return (
-      <div className="container py-24 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-orange-500" />
-      </div>
-    );
+  useEffect(() => {
+    if (!isLogin && !isLoading && (!isAuthenticated || user?.role !== "admin")) {
+      router.replace("/admin");
+    }
+  }, [isAuthenticated, isLoading, isLogin, router, user]);
+
+  async function handleLogout() {
+    await logout();
+    setMobileOpen(false);
+    router.replace("/admin");
   }
 
-  const menuItems = [
-    { label: "Dashboard", href: "/admin/dashboard", icon: BarChart3 },
-    { label: "Products", href: "/admin/products", icon: Package },
-    { label: "Orders", href: "/admin/orders", icon: ShoppingBag },
-    { label: "Customers", href: "/admin/customers", icon: Users },
-    { label: "Categories", href: "/admin/categories", icon: Layers },
-    { label: "Inventory", href: "/admin/inventory", icon: Archive },
-    { label: "Coupons", href: "/admin/coupons", icon: Ticket },
-    { label: "Payments", href: "/admin/payments", icon: CreditCard },
-    { label: "Analytics", href: "/admin/analytics", icon: SlidersHorizontal },
-    { label: "Settings", href: "/admin/settings", icon: Settings },
-  ];
+  if (isLogin) {
+    return <>{children}</>;
+  }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      {/* Sidebar Navigation */}
-      <aside className={`fixed inset-y-0 left-0 z-40 w-64 border-r border-slate-200 bg-white p-5 shadow-sm transform transition-transform duration-300 lg:translate-x-0 lg:static lg:flex lg:flex-col ${
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      }`}>
-        {/* Brand details */}
-        <div className="flex items-center justify-between border-b border-slate-100 pb-5 mb-6">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500 text-lg font-black text-white">
-              R
-            </div>
-            <div>
-              <h2 className="text-base font-black text-slate-800 leading-tight">
-                {SITE_CONFIG.shortName} Panel
-              </h2>
-              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
-                Store Console
-              </p>
-            </div>
+    <div className="min-h-screen overflow-hidden bg-slate-50 text-slate-950">
+      <div className="lg:hidden sticky top-0 z-40 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4">
+        <button
+          type="button"
+          onClick={() => setMobileOpen(true)}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-700"
+          aria-label="Open admin navigation"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+        <div className="min-w-0 text-right">
+          <p className="truncate text-sm font-black">Raghav HQ</p>
+          <p className="truncate text-xs font-semibold text-slate-500">{user?.email || "Admin"}</p>
+        </div>
+      </div>
+
+      {mobileOpen ? (
+        <button
+          type="button"
+          className="fixed inset-0 z-40 bg-slate-950/40 lg:hidden"
+          onClick={() => setMobileOpen(false)}
+          aria-label="Close admin navigation overlay"
+        />
+      ) : null}
+
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col border-r border-slate-200 bg-white transition-transform duration-200 lg:translate-x-0",
+          collapsed ? "lg:w-[88px]" : "lg:w-[280px]",
+          mobileOpen ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
+        <div className="flex h-16 items-center justify-between border-b border-slate-200 px-4">
+          <Link href="/admin/dashboard" className="flex min-w-0 items-center gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-950 text-sm font-black text-white">RH</span>
+            {!collapsed ? (
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-black">Raghav HQ</span>
+                <span className="block truncate text-xs font-semibold text-slate-500">Commerce admin</span>
+              </span>
+            ) : null}
           </Link>
-          <button onClick={() => setSidebarOpen(false)} className="rounded-full bg-slate-100 p-1.5 lg:hidden">
-            <X size={16} />
+          <button
+            type="button"
+            onClick={() => setMobileOpen(false)}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-500 lg:hidden"
+            aria-label="Close navigation"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setCollapsed((value) => !value)}
+            className="hidden h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-600 lg:inline-flex"
+            aria-label="Collapse navigation"
+          >
+            <ChevronLeft className={cn("h-4 w-4 transition", collapsed && "rotate-180")} />
           </button>
         </div>
 
-        {/* Menu list */}
-        <nav className="flex-1 flex flex-col gap-1 overflow-y-auto">
-          {menuItems.map((item) => {
-            const active = pathname === item.href;
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 rounded-xl px-4 py-3 text-xs font-bold transition-all ${
-                  active
-                    ? "bg-orange-500 text-white shadow-md shadow-orange-500/10"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-800"
-                }`}
-              >
-                <Icon size={16} />
-                {item.label}
-              </Link>
-            );
-          })}
+        <nav className="min-h-0 flex-1 overflow-y-auto p-3">
+          <div className="grid gap-1">
+            {navItems.map(({ href, icon: Icon, label }) => {
+              const active = pathname === href;
+              return (
+                <Link
+                  href={href}
+                  key={label}
+                  onClick={() => setMobileOpen(false)}
+                  className={cn(
+                    "flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-bold transition",
+                    active ? "bg-orange-50 text-orange-700" : "text-slate-700 hover:bg-slate-100 hover:text-slate-950",
+                    collapsed && "lg:justify-center lg:px-0",
+                  )}
+                  title={collapsed ? label : undefined}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  {!collapsed ? <span className="truncate">{label}</span> : null}
+                </Link>
+              );
+            })}
+          </div>
         </nav>
 
-        {/* Bottom profile back link */}
-        <div className="border-t border-slate-100 pt-5 mt-auto">
-          <Link
-            href="/profile"
-            className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 transition"
+        <div className="border-t border-slate-200 p-3">
+          {!collapsed ? (
+            <div className="mb-3 rounded-xl bg-slate-50 p-3">
+              <p className="truncate text-sm font-black">{user ? `${user.firstName} ${user.lastName}` : "Admin"}</p>
+              <p className="mt-1 truncate text-xs font-semibold text-slate-500">{user?.email}</p>
+            </div>
+          ) : null}
+          <button
+            type="button"
+            onClick={handleLogout}
+            className={cn(
+              "flex h-11 w-full items-center gap-3 rounded-xl px-3 text-sm font-bold text-rose-700 transition hover:bg-rose-50",
+              collapsed && "lg:justify-center lg:px-0",
+            )}
           >
-            <ArrowLeft size={15} />
-            Back to Profile
-          </Link>
+            <LogOut className="h-4 w-4 shrink-0" />
+            {!collapsed ? <span>Logout</span> : null}
+          </button>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <div className="flex-grow flex flex-col min-w-0">
-        {/* Admin Header */}
-        <header className="h-16 border-b border-slate-200 bg-white px-6 flex items-center justify-between shadow-sm relative z-30">
-          <button onClick={() => setSidebarOpen(true)} className="rounded-xl border border-slate-200 p-2 lg:hidden">
-            <Menu size={18} />
-          </button>
-          
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-500 ml-auto bg-slate-50 px-3.5 py-1.5 rounded-full border border-slate-100">
-            <UserCheck size={14} className="text-emerald-500" />
-            <span>Super Administrator Mode</span>
+      <main className={cn("h-[calc(100vh-4rem)] overflow-y-auto p-4 lg:h-screen lg:p-6", collapsed ? "lg:ml-[88px]" : "lg:ml-[280px]")}>
+        {isLoading && !user ? (
+          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm font-semibold text-slate-600 shadow-sm">
+            Loading admin workspace...
           </div>
-        </header>
-
-        {/* Inner Content scrollable */}
-        <main className="p-6 md:p-8 overflow-y-auto flex-grow">
-          {children}
-        </main>
-      </div>
+        ) : (
+          children
+        )}
+      </main>
     </div>
   );
 }

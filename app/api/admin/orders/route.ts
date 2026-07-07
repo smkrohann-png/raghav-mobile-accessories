@@ -1,0 +1,34 @@
+import { NextResponse } from "next/server";
+import { getSessionFromCookies } from "@/lib/auth";
+import { db } from "@/lib/db/memory";
+import type { OrderStatus } from "@/types/commerce";
+
+// GET all orders (admin only)
+export async function GET(req: Request) {
+  try {
+    const session = await getSessionFromCookies();
+    if (!session) {
+      return NextResponse.json(
+        { error: "Not authenticated" },
+        { status: 401 }
+      );
+    }
+
+    const user = db.getUserById(session.userId);
+    if (!user || user.role !== "admin") {
+      return NextResponse.json(
+        { error: "Unauthorized - Admin only" },
+        { status: 403 }
+      );
+    }
+
+    const orders = db.getAllOrders();
+    return NextResponse.json({ orders });
+  } catch (error) {
+    console.error("Get all orders error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch orders" },
+      { status: 500 }
+    );
+  }
+}
