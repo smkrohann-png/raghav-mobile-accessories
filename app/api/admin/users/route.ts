@@ -13,7 +13,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const user = db.getUserById(session.userId);
+    const user = await db.getUserById(session.userId);
     if (!user || user.role !== "admin") {
       return NextResponse.json(
         { error: "Unauthorized - Admin only" },
@@ -22,7 +22,7 @@ export async function GET(req: Request) {
     }
 
     // Note: In production, implement pagination
-    const allOrders = db.getAllOrders();
+    const allOrders = await db.getAllOrders();
     const totalCustomers = new Set(allOrders.map((o) => o.customer)).size;
 
     return NextResponse.json({

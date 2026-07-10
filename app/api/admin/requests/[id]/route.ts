@@ -12,7 +12,7 @@ export async function PATCH(req: Request, context: RouteContext<"/api/admin/requ
   if (!["New", "In Progress", "Closed"].includes(status)) {
     return NextResponse.json({ error: "Invalid request status" }, { status: 400 });
   }
-  const request = db.updateRequest(id, { status });
+  const request = await db.updateRequest(id, { status });
   if (!request) return NextResponse.json({ error: "Request not found" }, { status: 404 });
   return NextResponse.json({ request });
 }

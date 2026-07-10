@@ -7,7 +7,32 @@ import type { Review } from "@/data/reviews";
 import { products as seedProducts } from "@/data/storefront";
 import { approvedReviews, pendingReviews } from "@/data/reviews";
 
+import {
+  isMongoDBConfigured,
+  connectToDatabase,
+  UserModel,
+  SessionModel,
+  CartModel,
+  AddressModel,
+  OrderModel,
+  ProductModel,
+  ReviewModel,
+  AdminRequestModel,
+  CouponModel,
+  StoreSettingsModel,
+} from "./mongodb";
+
 export type AdminRequestKind = "contact" | "support" | "repair";
+
+export type Coupon = {
+  id: string;
+  code: string;
+  discountType: "percentage" | "fixed";
+  discountValue: number;
+  minOrderAmount: number;
+  isActive: boolean;
+  createdAt: string;
+};
 
 export type AdminRequest = {
   id: string;
@@ -40,6 +65,7 @@ type DbSnapshot = {
   products: Product[];
   reviews: Review[];
   requests: AdminRequest[];
+  coupons?: Coupon[];
   settings: StoreSettings;
   idCounters: {
     user: number;
@@ -50,6 +76,7 @@ type DbSnapshot = {
     product: number;
     review: number;
     request: number;
+    coupon?: number;
   };
 };
 
@@ -57,7 +84,7 @@ const dbFilePath = process.env.FILE_DB_PATH
   ? path.resolve(process.env.FILE_DB_PATH)
   : path.join(process.cwd(), ".data", "raghav-store.json");
 
-export class MemoryDB {
+export class UnifiedDB {
   private users: Map<string, User> = new Map();
   private carts: Map<string, Cart> = new Map();
   private addresses: Map<string, Address> = new Map();
@@ -66,6 +93,7 @@ export class MemoryDB {
   private products: Map<string, Product> = new Map();
   private reviews: Map<string, Review> = new Map();
   private requests: Map<string, AdminRequest> = new Map();
+  private coupons: Map<string, Coupon> = new Map();
   private settings: StoreSettings = {
     storeName: "Raghav Mobile Accessories",
     email: "Raghavmobileaccessories23@gmail.com",
@@ -83,11 +111,68 @@ export class MemoryDB {
     product: 0,
     review: 0,
     request: 0,
+    coupon: 0,
   };
 
   constructor() {
-    this.load();
-    this.initializeDefaults();
+    // Only load local file if not using Mongo
+    if (!isMongoDBConfigured()) {
+      this.load();
+      this.initializeDefaults();
+    }
+  }
+
+  // Ensure DB is initialized (Mongo or memory)
+  public async init(): Promise<void> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      await this.initializeMongoDefaults();
+    }
+  }
+
+  private async initializeMongoDefaults(): Promise<void> {
+    const productsCount = await ProductModel.countDocuments();
+    if (productsCount === 0) {
+      await ProductModel.insertMany(seedProducts);
+    }
+
+    const reviewsCount = await ReviewModel.countDocuments();
+    if (reviewsCount === 0) {
+      const allReviews = [...approvedReviews, ...pendingReviews].map((r, i) => ({
+        ...r,
+        id: `review_${i + 1}`,
+        createdAt: new Date().toISOString()
+      }));
+      await ReviewModel.insertMany(allReviews);
+    }
+
+    const couponsCount = await CouponModel.countDocuments();
+    if (couponsCount === 0) {
+      await CouponModel.insertMany([
+        { id: "coupon_1", code: "RAGHAV10", discountType: "percentage", discountValue: 10, minOrderAmount: 499, isActive: true, createdAt: new Date().toISOString() },
+        { id: "coupon_2", code: "WELCOME50", discountType: "fixed", discountValue: 50, minOrderAmount: 299, isActive: true, createdAt: new Date().toISOString() }
+      ]);
+    }
+
+    const settingsCount = await StoreSettingsModel.countDocuments();
+    if (settingsCount === 0) {
+      await StoreSettingsModel.create(this.settings);
+    }
+
+    const admin = await UserModel.findOne({ username: "admin" });
+    if (!admin) {
+      await UserModel.create({
+        id: "user_0_admin",
+        username: "admin",
+        email: "admin@raghav.com",
+        password: await this.hashPassword("admin@123"),
+        firstName: "Admin",
+        lastName: "Panel",
+        phone: "9876543210",
+        role: "admin",
+      });
+      console.log("Mongo Admin user created");
+    }
   }
 
   private async initializeDefaults(): Promise<void> {
@@ -109,11 +194,27 @@ export class MemoryDB {
       this.idCounters.review = Math.max(this.idCounters.review, this.reviews.size);
     }
 
-    // Create admin user if not exists
-    const adminExists = this.getUserByUsername("admin") || this.getUserByEmail("admin@raghav.com");
+    if (this.coupons.size === 0) {
+      await this.createCoupon({
+        code: "RAGHAV10",
+        discountType: "percentage",
+        discountValue: 10,
+        minOrderAmount: 499,
+        isActive: true,
+      });
+      await this.createCoupon({
+        code: "WELCOME50",
+        discountType: "fixed",
+        discountValue: 50,
+        minOrderAmount: 299,
+        isActive: true,
+      });
+    }
+
+    const adminExists = await this.getUserByUsername("admin") || await this.getUserByEmail("admin@raghav.com");
     if (!adminExists) {
       const hashedPassword = await this.hashPassword("admin@123");
-      this.createUser({
+      await this.createUser({
         username: "admin",
         email: "admin@raghav.com",
         password: hashedPassword,
@@ -124,7 +225,7 @@ export class MemoryDB {
       });
       console.log("Default admin user created: admin / admin@123");
     } else if (adminExists.password !== await this.hashPassword("admin@123") || adminExists.username !== "admin") {
-      this.updateUser(adminExists.id, {
+      await this.updateUser(adminExists.id, {
         username: "admin",
         password: await this.hashPassword("admin@123"),
         role: "admin",
@@ -142,10 +243,13 @@ export class MemoryDB {
 
   private load(): void {
     if (!fs.existsSync(dbFilePath)) return;
-
     try {
       const snapshot = JSON.parse(fs.readFileSync(dbFilePath, "utf8")) as DbSnapshot;
-      this.idCounters = snapshot.idCounters ?? this.idCounters;
+      this.idCounters = {
+        ...this.idCounters,
+        ...snapshot.idCounters,
+        coupon: snapshot.idCounters?.coupon ?? this.idCounters.coupon ?? 0,
+      };
 
       for (const user of snapshot.users ?? []) {
         this.users.set(user.id, user);
@@ -175,6 +279,10 @@ export class MemoryDB {
       for (const request of snapshot.requests ?? []) {
         this.requests.set(request.id, request);
       }
+      for (const coupon of snapshot.coupons ?? []) {
+        this.coupons.set(coupon.id, coupon);
+        this.coupons.set(`code_${coupon.code.toUpperCase()}`, coupon);
+      }
       if (snapshot.settings) {
         this.settings = { ...this.settings, ...snapshot.settings };
       }
@@ -184,6 +292,7 @@ export class MemoryDB {
   }
 
   private persist(): void {
+    if (isMongoDBConfigured()) return; // Don't persist to file if using Mongo
     try {
       fs.mkdirSync(path.dirname(dbFilePath), { recursive: true });
       const snapshot: DbSnapshot = {
@@ -201,6 +310,9 @@ export class MemoryDB {
         products: Array.from(this.products.values()),
         reviews: Array.from(this.reviews.values()),
         requests: Array.from(this.requests.values()),
+        coupons: Array.from(this.coupons.entries())
+          .filter(([key]) => !key.startsWith("code_"))
+          .map(([, coupon]) => coupon),
         settings: this.settings,
         idCounters: this.idCounters,
       };
@@ -211,7 +323,12 @@ export class MemoryDB {
   }
 
   // ===== USER OPERATIONS =====
-  createUser(data: Omit<User, "id" | "createdAt" | "updatedAt">): User {
+  async createUser(data: Omit<User, "id" | "createdAt" | "updatedAt">): Promise<User> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      const id = `user_${Date.now()}`;
+      return (await UserModel.create({ ...data, id })).toObject();
+    }
     const id = `user_${++this.idCounters.user}`;
     const user: User = {
       ...data,
@@ -220,35 +337,56 @@ export class MemoryDB {
       updatedAt: new Date(),
     };
     this.users.set(id, user);
-    this.users.set(`email_${data.email}`, user); // index by email
+    this.users.set(`email_${data.email}`, user);
     if (data.username) this.users.set(`username_${data.username.toLowerCase()}`, user);
     this.persist();
     return user;
   }
 
-  getUserById(id: string): User | null {
+  async getUserById(id: string): Promise<User | null> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return UserModel.findOne({ id }).lean();
+    }
     return this.users.get(id) || null;
   }
 
-  getUserByEmail(email: string): User | null {
+  async getUserByEmail(email: string): Promise<User | null> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return UserModel.findOne({ email }).lean();
+    }
     return this.users.get(`email_${email}`) || null;
   }
 
-  getUserByUsername(username: string): User | null {
+  async getUserByUsername(username: string): Promise<User | null> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return UserModel.findOne({ username: username.toLowerCase() }).lean();
+    }
     return this.users.get(`username_${username.toLowerCase()}`) || null;
   }
 
-  getUserByIdentifier(identifier: string): User | null {
-    return this.getUserByEmail(identifier) || this.getUserByUsername(identifier);
+  async getUserByIdentifier(identifier: string): Promise<User | null> {
+    return (await this.getUserByEmail(identifier)) || (await this.getUserByUsername(identifier));
   }
 
-  getAllUsers(): User[] {
+  async getAllUsers(): Promise<User[]> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return UserModel.find().lean();
+    }
     return Array.from(this.users.entries())
       .filter(([key]) => !key.startsWith("email_") && !key.startsWith("username_"))
       .map(([, user]) => user);
   }
 
-  updateUser(id: string, data: Partial<User>): User | null {
+  async updateUser(id: string, data: Partial<User>): Promise<User | null> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      data.updatedAt = new Date();
+      return UserModel.findOneAndUpdate({ id }, data, { new: true }).lean();
+    }
     const user = this.users.get(id);
     if (!user) return null;
     const updated = { ...user, ...data, updatedAt: new Date() };
@@ -266,48 +404,81 @@ export class MemoryDB {
   }
 
   // ===== PRODUCT OPERATIONS =====
-  getAllProducts(): Product[] {
+  async getAllProducts(): Promise<Product[]> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return ProductModel.find().lean();
+    }
     return Array.from(this.products.values());
   }
 
-  getProductById(id: string): Product | null {
+  async getProductById(id: string): Promise<Product | null> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return ProductModel.findOne({ id }).lean();
+    }
     return this.products.get(id) || null;
   }
 
-  upsertProduct(product: Product): Product {
+  async upsertProduct(product: Product): Promise<Product> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return (await ProductModel.findOneAndUpdate({ id: product.id }, product, { upsert: true, new: true })).toObject();
+    }
     this.products.set(product.id, product);
     this.persist();
     return product;
   }
 
-  createProduct(data: Omit<Product, "id"> & { id?: string }): Product {
+  async createProduct(data: Omit<Product, "id"> & { id?: string }): Promise<Product> {
     const id = data.id || `${data.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${++this.idCounters.product}`;
     const product: Product = { ...data, id };
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return (await ProductModel.create(product)).toObject();
+    }
     this.products.set(id, product);
     this.persist();
     return product;
   }
 
-  deleteProduct(id: string): boolean {
+  async deleteProduct(id: string): Promise<boolean> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      const res = await ProductModel.deleteOne({ id });
+      return res.deletedCount > 0;
+    }
     const deleted = this.products.delete(id);
     if (deleted) this.persist();
     return deleted;
   }
 
   // ===== REVIEW OPERATIONS =====
-  getAllReviews(): Review[] {
+  async getAllReviews(): Promise<Review[]> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return ReviewModel.find().lean();
+    }
     return Array.from(this.reviews.values());
   }
 
-  createReview(data: Omit<Review, "id" | "status" | "createdAt">): Review {
+  async createReview(data: Omit<Review, "id" | "status" | "createdAt">): Promise<Review> {
     const id = `review_${++this.idCounters.review}`;
     const review: Review = { ...data, id, status: "Pending", createdAt: new Date().toISOString() };
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return (await ReviewModel.create(review)).toObject();
+    }
     this.reviews.set(id, review);
     this.persist();
     return review;
   }
 
-  updateReview(id: string, data: Partial<Review>): Review | null {
+  async updateReview(id: string, data: Partial<Review>): Promise<Review | null> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return ReviewModel.findOneAndUpdate({ id }, data, { new: true }).lean();
+    }
     const review = this.reviews.get(id);
     if (!review) return null;
     const updated = { ...review, ...data };
@@ -317,19 +488,32 @@ export class MemoryDB {
   }
 
   // ===== REQUEST OPERATIONS =====
-  createRequest(data: Omit<AdminRequest, "id" | "status" | "createdAt">): AdminRequest {
+  async createRequest(data: Omit<AdminRequest, "id" | "status" | "createdAt">): Promise<AdminRequest> {
     const id = `request_${++this.idCounters.request}`;
     const request: AdminRequest = { ...data, id, status: "New", createdAt: new Date().toISOString() };
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return (await AdminRequestModel.create(request)).toObject();
+    }
     this.requests.set(id, request);
     this.persist();
     return request;
   }
 
-  getAllRequests(): AdminRequest[] {
+  async getAllRequests(): Promise<AdminRequest[]> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      const reqs = await AdminRequestModel.find().lean();
+      return (reqs as AdminRequest[]).sort((a: AdminRequest, b: AdminRequest) => b.createdAt.localeCompare(a.createdAt));
+    }
     return Array.from(this.requests.values()).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
-  updateRequest(id: string, data: Partial<AdminRequest>): AdminRequest | null {
+  async updateRequest(id: string, data: Partial<AdminRequest>): Promise<AdminRequest | null> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return AdminRequestModel.findOneAndUpdate({ id }, data, { new: true }).lean();
+    }
     const request = this.requests.get(id);
     if (!request) return null;
     const updated = { ...request, ...data };
@@ -339,18 +523,34 @@ export class MemoryDB {
   }
 
   // ===== SETTINGS OPERATIONS =====
-  getSettings(): StoreSettings {
+  async getSettings(): Promise<StoreSettings> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      const settings = await StoreSettingsModel.findOne().lean();
+      return settings || this.settings;
+    }
     return this.settings;
   }
 
-  updateSettings(data: Partial<StoreSettings>): StoreSettings {
+  async updateSettings(data: Partial<StoreSettings>): Promise<StoreSettings> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      let settings = await StoreSettingsModel.findOne();
+      if (!settings) {
+        settings = new StoreSettingsModel({ ...this.settings, ...data });
+      } else {
+        Object.assign(settings, data);
+      }
+      await settings.save();
+      return settings.toObject();
+    }
     this.settings = { ...this.settings, ...data };
     this.persist();
     return this.settings;
   }
 
   // ===== CART OPERATIONS =====
-  createCart(userId: string): Cart {
+  async createCart(userId: string): Promise<Cart> {
     const id = `cart_${++this.idCounters.cart}`;
     const cart: Cart = {
       id,
@@ -358,22 +558,38 @@ export class MemoryDB {
       items: [],
       updatedAt: new Date(),
     };
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return (await CartModel.create(cart)).toObject();
+    }
     this.carts.set(id, cart);
-    this.carts.set(`user_${userId}`, cart); // index by userId
+    this.carts.set(`user_${userId}`, cart);
     this.persist();
     return cart;
   }
 
-  getCartByUserId(userId: string): Cart | null {
+  async getCartByUserId(userId: string): Promise<Cart | null> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return CartModel.findOne({ userId }).lean();
+    }
     return this.carts.get(`user_${userId}`) || null;
   }
 
-  getCartById(id: string): Cart | null {
+  async getCartById(id: string): Promise<Cart | null> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return CartModel.findOne({ id }).lean();
+    }
     return this.carts.get(id) || null;
   }
 
-  updateCart(cartId: string, cart: Cart): Cart {
+  async updateCart(cartId: string, cart: Cart): Promise<Cart> {
     cart.updatedAt = new Date();
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return (await CartModel.findOneAndUpdate({ id: cartId }, cart, { upsert: true, new: true })).toObject();
+    }
     this.carts.set(cartId, cart);
     this.carts.set(`user_${cart.userId}`, cart);
     this.persist();
@@ -381,27 +597,43 @@ export class MemoryDB {
   }
 
   // ===== ADDRESS OPERATIONS =====
-  createAddress(data: Omit<Address, "id" | "createdAt">): Address {
+  async createAddress(data: Omit<Address, "id" | "createdAt">): Promise<Address> {
     const id = `addr_${++this.idCounters.address}`;
     const address: Address = {
       ...data,
       id,
       createdAt: new Date(),
     };
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return (await AddressModel.create(address)).toObject();
+    }
     this.addresses.set(id, address);
     this.persist();
     return address;
   }
 
-  getAddressesByUserId(userId: string): Address[] {
+  async getAddressesByUserId(userId: string): Promise<Address[]> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return AddressModel.find({ userId }).lean();
+    }
     return Array.from(this.addresses.values()).filter((a) => a.userId === userId);
   }
 
-  getAddressById(id: string): Address | null {
+  async getAddressById(id: string): Promise<Address | null> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return AddressModel.findOne({ id }).lean();
+    }
     return this.addresses.get(id) || null;
   }
 
-  updateAddress(id: string, data: Partial<Address>): Address | null {
+  async updateAddress(id: string, data: Partial<Address>): Promise<Address | null> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return AddressModel.findOneAndUpdate({ id }, data, { new: true }).lean();
+    }
     const address = this.addresses.get(id);
     if (!address) return null;
     const updated = { ...address, ...data };
@@ -410,34 +642,59 @@ export class MemoryDB {
     return updated;
   }
 
-  deleteAddress(id: string): boolean {
+  async deleteAddress(id: string): Promise<boolean> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      const res = await AddressModel.deleteOne({ id });
+      return res.deletedCount > 0;
+    }
     const deleted = this.addresses.delete(id);
     if (deleted) this.persist();
     return deleted;
   }
 
   // ===== ORDER OPERATIONS =====
-  createOrder(data: Omit<CustomerOrder, "id">): CustomerOrder {
+  async createOrder(data: Omit<CustomerOrder, "id">): Promise<CustomerOrder> {
     const id = `order_${++this.idCounters.order}`;
     const order: CustomerOrder = { ...data, id };
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return (await OrderModel.create(order)).toObject();
+    }
     this.orders.set(id, order);
     this.persist();
     return order;
   }
 
-  getOrderById(id: string): CustomerOrder | null {
+  async getOrderById(id: string): Promise<CustomerOrder | null> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return OrderModel.findOne({ id }).lean();
+    }
     return this.orders.get(id) || null;
   }
 
-  getOrdersByUserId(userId: string): CustomerOrder[] {
+  async getOrdersByUserId(userId: string): Promise<CustomerOrder[]> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return OrderModel.find({ customer: userId }).lean();
+    }
     return Array.from(this.orders.values()).filter((o) => o.customer === userId);
   }
 
-  getAllOrders(): CustomerOrder[] {
+  async getAllOrders(): Promise<CustomerOrder[]> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return OrderModel.find().lean();
+    }
     return Array.from(this.orders.values());
   }
 
-  updateOrder(id: string, data: Partial<CustomerOrder>): CustomerOrder | null {
+  async updateOrder(id: string, data: Partial<CustomerOrder>): Promise<CustomerOrder | null> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return OrderModel.findOneAndUpdate({ id }, data, { new: true }).lean();
+    }
     const order = this.orders.get(id);
     if (!order) return null;
     const updated = { ...order, ...data };
@@ -447,7 +704,7 @@ export class MemoryDB {
   }
 
   // ===== SESSION OPERATIONS =====
-  createSession(userId: string, token: string, expiresAt: Date): AuthSession {
+  async createSession(userId: string, token: string, expiresAt: Date): Promise<AuthSession> {
     const id = `sess_${++this.idCounters.session}`;
     const session: AuthSession = {
       id,
@@ -456,17 +713,30 @@ export class MemoryDB {
       expiresAt,
       createdAt: new Date(),
     };
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return (await SessionModel.create(session)).toObject();
+    }
     this.sessions.set(id, session);
-    this.sessions.set(`token_${token}`, session); // index by token
+    this.sessions.set(`token_${token}`, session);
     this.persist();
     return session;
   }
 
-  getSessionByToken(token: string): AuthSession | null {
+  async getSessionByToken(token: string): Promise<AuthSession | null> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return SessionModel.findOne({ token }).lean();
+    }
     return this.sessions.get(`token_${token}`) || null;
   }
 
-  deleteSession(token: string): boolean {
+  async deleteSession(token: string): Promise<boolean> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      const res = await SessionModel.deleteOne({ token });
+      return res.deletedCount > 0;
+    }
     const session = this.sessions.get(`token_${token}`);
     if (!session) return false;
     this.sessions.delete(session.id);
@@ -475,8 +745,81 @@ export class MemoryDB {
     return true;
   }
 
+  // ===== COUPON OPERATIONS =====
+  async getAllCoupons(): Promise<Coupon[]> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return CouponModel.find().lean();
+    }
+    return Array.from(this.coupons.entries())
+      .filter(([key]) => !key.startsWith("code_"))
+      .map(([, coupon]) => coupon);
+  }
+
+  async getCouponById(id: string): Promise<Coupon | null> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return CouponModel.findOne({ id }).lean();
+    }
+    return this.coupons.get(id) || null;
+  }
+
+  async getCouponByCode(code: string): Promise<Coupon | null> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return CouponModel.findOne({ code: code.toUpperCase() }).lean();
+    }
+    return this.coupons.get(`code_${code.toUpperCase()}`) || null;
+  }
+
+  async createCoupon(data: Omit<Coupon, "id" | "createdAt">): Promise<Coupon> {
+    const id = `coupon_${++this.idCounters.coupon}`;
+    const coupon: Coupon = {
+      ...data,
+      id,
+      createdAt: new Date().toISOString(),
+    };
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return (await CouponModel.create(coupon)).toObject();
+    }
+    this.coupons.set(id, coupon);
+    this.coupons.set(`code_${data.code.toUpperCase()}`, coupon);
+    this.persist();
+    return coupon;
+  }
+
+  async deleteCoupon(id: string): Promise<boolean> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      const res = await CouponModel.deleteOne({ id });
+      return res.deletedCount > 0;
+    }
+    const coupon = this.coupons.get(id);
+    if (!coupon) return false;
+    this.coupons.delete(id);
+    this.coupons.delete(`code_${coupon.code.toUpperCase()}`);
+    this.persist();
+    return true;
+  }
+
   // ===== DEBUG: Clear all data =====
-  clearAll(): void {
+  async clearAll(): Promise<void> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      await Promise.all([
+        UserModel.deleteMany({}),
+        CartModel.deleteMany({}),
+        AddressModel.deleteMany({}),
+        OrderModel.deleteMany({}),
+        SessionModel.deleteMany({}),
+        ProductModel.deleteMany({}),
+        ReviewModel.deleteMany({}),
+        AdminRequestModel.deleteMany({}),
+        CouponModel.deleteMany({}),
+      ]);
+      return;
+    }
     this.users.clear();
     this.carts.clear();
     this.addresses.clear();
@@ -485,19 +828,14 @@ export class MemoryDB {
     this.products.clear();
     this.reviews.clear();
     this.requests.clear();
+    this.coupons.clear();
     this.idCounters = {
-      user: 0,
-      cart: 0,
-      address: 0,
-      order: 0,
-      session: 0,
-      product: 0,
-      review: 0,
-      request: 0,
+      user: 0, cart: 0, address: 0, order: 0, session: 0,
+      product: 0, review: 0, request: 0, coupon: 0,
     };
     this.persist();
   }
 }
 
 // Singleton instance
-export const db = new MemoryDB();
+export const db = new UnifiedDB();

@@ -4,7 +4,7 @@ import { getApiErrorMessage } from "@/lib/api-error";
 import type { CustomerOrder } from "@/types/commerce";
 import type { Product } from "@/types/product";
 import type { Review } from "@/data/reviews";
-import type { AdminRequest, StoreSettings } from "@/lib/db/memory";
+import type { AdminRequest, StoreSettings, Coupon } from "@/lib/db/memory";
 
 interface AdminStore {
   dashboard: {
@@ -21,6 +21,7 @@ interface AdminStore {
   products: Product[];
   reviews: Review[];
   requests: AdminRequest[];
+  coupons: Coupon[];
   settings: StoreSettings | null;
   isLoading: boolean;
   error: string | null;
@@ -38,6 +39,10 @@ interface AdminStore {
   updateRequestStatus: (id: string, status: AdminRequest["status"]) => Promise<void>;
   fetchSettings: () => Promise<void>;
   saveSettings: (settings: Partial<StoreSettings>) => Promise<void>;
+  fetchCoupons: () => Promise<void>;
+  createCoupon: (coupon: Omit<Coupon, "id" | "createdAt">) => Promise<void>;
+  deleteCoupon: (id: string) => Promise<void>;
+  shipOrderViaShiprocket: (orderId: string) => Promise<void>;
 }
 
 export const useAdminStore = create<AdminStore>((set) => ({
@@ -46,6 +51,7 @@ export const useAdminStore = create<AdminStore>((set) => ({
   products: [],
   reviews: [],
   requests: [],
+  coupons: [],
   settings: null,
   isLoading: false,
   error: null,
@@ -191,5 +197,58 @@ export const useAdminStore = create<AdminStore>((set) => ({
   saveSettings: async (settings) => {
     const { data } = await axios.put("/api/admin/settings", settings);
     set({ settings: data.settings });
+  },
+
+  fetchCoupons: async () => {
+    try {
+      set({ isLoading: true, error: null });
+      const { data } = await axios.get("/api/admin/coupons");
+      set({ coupons: data.coupons });
+    } catch (error: unknown) {
+      set({ error: getApiErrorMessage(error, "Failed to fetch coupons") });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  createCoupon: async (coupon) => {
+    try {
+      set({ isLoading: true, error: null });
+      const { data } = await axios.post("/api/admin/coupons", coupon);
+      set((state) => ({ coupons: [...state.coupons, data.coupon] }));
+    } catch (error: unknown) {
+      set({ error: getApiErrorMessage(error, "Failed to create coupon") });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  deleteCoupon: async (id) => {
+    try {
+      set({ isLoading: true, error: null });
+      await axios.delete(`/api/admin/coupons/${id}`);
+      set((state) => ({ coupons: state.coupons.filter((c) => c.id !== id) }));
+    } catch (error: unknown) {
+      set({ error: getApiErrorMessage(error, "Failed to delete coupon") });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  shipOrderViaShiprocket: async (orderId) => {
+    try {
+      set({ isLoading: true, error: null });
+      const { data } = await axios.post(`/api/admin/orders/${orderId}/shiprocket`);
+      set((state) => ({
+        orders: state.orders.map((o) => (o.id === orderId ? data.order : o)),
+      }));
+    } catch (error: unknown) {
+      set({ error: getApiErrorMessage(error, "Failed to ship order via Shiprocket") });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
   },
 }));

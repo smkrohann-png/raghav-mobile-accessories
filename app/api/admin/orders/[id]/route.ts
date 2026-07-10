@@ -14,7 +14,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       );
     }
 
-    const user = db.getUserById(session.userId);
+    const user = await db.getUserById(session.userId);
     if (!user || user.role !== "admin") {
       return NextResponse.json(
         { error: "Unauthorized - Admin only" },
@@ -43,7 +43,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       );
     }
 
-    const order = db.getOrderById(id);
+    const order = await db.getOrderById(id);
     if (!order) {
       return NextResponse.json(
         { error: "Order not found" },
@@ -51,18 +51,18 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       );
     }
 
-    const updated = db.updateOrder(id, {
-      status,
-      ...(paymentStatus ? { paymentStatus } : {}),
-      messages: [
-        ...order.messages,
-        {
+    const updated = await db.updateOrder(id, {
           status,
-          text: message || `Order status updated to ${status}`,
-          time: new Date().toISOString(),
-        },
-      ],
-    });
+          ...(paymentStatus ? { paymentStatus } : {}),
+          messages: [
+            ...order.messages,
+            {
+              status,
+              text: message || `Order status updated to ${status}`,
+              time: new Date().toISOString(),
+            },
+          ],
+        });
 
     return NextResponse.json({
       message: "Order status updated",

@@ -24,7 +24,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       );
     }
 
-    const cart = db.getCartByUserId(session.userId);
+    const cart = await db.getCartByUserId(session.userId);
     if (!cart) {
       return NextResponse.json(
         { error: "Cart not found" },
@@ -45,7 +45,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       cart.items.splice(itemIndex, 1);
     } else {
       // Check stock
-      const product = db.getProductById(productId);
+      const product = await db.getProductById(productId);
       if (product && product.stock < quantity) {
         return NextResponse.json(
           { error: "Insufficient stock" },
@@ -55,10 +55,10 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       cart.items[itemIndex].quantity = quantity;
     }
 
-    const updatedCart = db.updateCart(cart.id, cart);
+    const updatedCart = await db.updateCart(cart.id, cart);
 
-    const items = updatedCart.items.map((item) => {
-      const prod = db.getProductById(item.productId);
+    const items = updatedCart.items.map(async (item) => {
+      const prod = await db.getProductById(item.productId);
       return {
         ...item,
         product: prod,
@@ -94,7 +94,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
     const { id: productId } = await params;
 
-    const cart = db.getCartByUserId(session.userId);
+    const cart = await db.getCartByUserId(session.userId);
     if (!cart) {
       return NextResponse.json(
         { error: "Cart not found" },
@@ -111,10 +111,10 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     }
 
     cart.items.splice(itemIndex, 1);
-    const updatedCart = db.updateCart(cart.id, cart);
+    const updatedCart = await db.updateCart(cart.id, cart);
 
-    const items = updatedCart.items.map((item) => {
-      const prod = db.getProductById(item.productId);
+    const items = updatedCart.items.map(async (item) => {
+      const prod = await db.getProductById(item.productId);
       return {
         ...item,
         product: prod,

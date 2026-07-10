@@ -38,14 +38,14 @@ export async function POST(req: Request) {
     }
 
     // Check if user already exists
-    const existingUser = db.getUserByEmail(email);
+    const existingUser = await db.getUserByEmail(email);
     if (existingUser) {
       return NextResponse.json(
         { error: "Email already registered" },
         { status: 409 }
       );
     }
-    if (username && db.getUserByUsername(username)) {
+    if (username && await db.getUserByUsername(username)) {
       return NextResponse.json(
         { error: "Username already registered" },
         { status: 409 }
@@ -54,18 +54,18 @@ export async function POST(req: Request) {
 
     // Hash password and create user
     const hashedPassword = await hashPassword(password);
-    const user = db.createUser({
-      email,
-      username,
-      password: hashedPassword,
-      firstName,
-      lastName,
-      phone,
-      role: "customer",
-    });
+    const user = await db.createUser({
+          email,
+          username,
+          password: hashedPassword,
+          firstName,
+          lastName,
+          phone,
+          role: "customer",
+        });
 
     // Create cart for new user
-    db.createCart(user.id);
+    await db.createCart(user.id);
 
     // Create JWT token
     const token = await signToken({

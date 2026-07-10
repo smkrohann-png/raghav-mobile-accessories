@@ -13,7 +13,8 @@ export async function GET(req: Request) {
   if (range === "quarterly") start.setMonth(now.getMonth() - 3);
   if (range === "yearly") start.setFullYear(now.getFullYear() - 1);
 
-  const orders = db.getAllOrders().filter((order) => range === "all" || new Date(order.date) >= start);
+  const allOrders = await db.getAllOrders();
+  const orders = allOrders.filter((order) => range === "all" || new Date(order.date) >= start);
   const rows = [
     ["Order ID", "Customer", "Email", "Phone", "Date", "Amount", "Status", "Payment", "Address", "Products"],
     ...orders.map((order) => [

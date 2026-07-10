@@ -16,7 +16,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const { id } = await params;
     const body = await req.json();
 
-    const address = db.getAddressById(id);
+    const address = await db.getAddressById(id);
     if (!address || address.userId !== session.userId) {
       return NextResponse.json(
         { error: "Address not found or unauthorized" },
@@ -26,15 +26,15 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
     // If setting as default, unset other defaults
     if (body.isDefault) {
-      const addresses = db.getAddressesByUserId(session.userId);
-      addresses.forEach((addr) => {
+      const addresses = await db.getAddressesByUserId(session.userId);
+      addresses.forEach(async (addr) => {
         if (addr.isDefault && addr.id !== id) {
-          db.updateAddress(addr.id, { isDefault: false });
+          await db.updateAddress(addr.id, { isDefault: false });
         }
       });
     }
 
-    const updated = db.updateAddress(id, body);
+    const updated = await db.updateAddress(id, body);
     return NextResponse.json({
       message: "Address updated successfully",
       address: updated,
@@ -61,7 +61,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
     const { id } = await params;
 
-    const address = db.getAddressById(id);
+    const address = await db.getAddressById(id);
     if (!address || address.userId !== session.userId) {
       return NextResponse.json(
         { error: "Address not found or unauthorized" },
@@ -69,7 +69,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
       );
     }
 
-    db.deleteAddress(id);
+    await db.deleteAddress(id);
     return NextResponse.json({
       message: "Address deleted successfully",
     });

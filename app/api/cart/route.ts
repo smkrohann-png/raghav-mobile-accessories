@@ -13,14 +13,14 @@ export async function GET(req: Request) {
       );
     }
 
-    let cart = db.getCartByUserId(session.userId);
+    let cart = await db.getCartByUserId(session.userId);
     if (!cart) {
-      cart = db.createCart(session.userId);
+      cart = await db.createCart(session.userId);
     }
 
     // Map product IDs to full product details
-    const items = cart.items.map((item) => {
-      const product = db.getProductById(item.productId);
+    const items = cart.items.map(async (item) => {
+      const product = await db.getProductById(item.productId);
       return {
         ...item,
         product,
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
     }
 
     // Check if product exists
-    const product = db.getProductById(productId);
+    const product = await db.getProductById(productId);
     if (!product) {
       return NextResponse.json(
         { error: "Product not found" },
@@ -80,9 +80,9 @@ export async function POST(req: Request) {
       );
     }
 
-    let cart = db.getCartByUserId(session.userId);
+    let cart = await db.getCartByUserId(session.userId);
     if (!cart) {
-      cart = db.createCart(session.userId);
+      cart = await db.createCart(session.userId);
     }
 
     // Add or update item
@@ -104,10 +104,10 @@ export async function POST(req: Request) {
       });
     }
 
-    const updatedCart = db.updateCart(cart.id, cart);
+    const updatedCart = await db.updateCart(cart.id, cart);
 
-    const items = updatedCart.items.map((item) => {
-      const prod = db.getProductById(item.productId);
+    const items = updatedCart.items.map(async (item) => {
+      const prod = await db.getProductById(item.productId);
       return {
         ...item,
         product: prod,

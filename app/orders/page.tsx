@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { PackageSearch } from "lucide-react";
+import { Check, Copy, ExternalLink, PackageSearch, Truck } from "lucide-react";
 
 import { OrderTimeline, StatusBadge } from "@/components/commerce/OrderTimeline";
 import { Button } from "@/components/ui/Button";
@@ -14,6 +14,7 @@ import { formatCurrency } from "@/lib/utils";
 export default function OrdersPage() {
   const { orders, fetchOrders, isLoading, error } = useProfileStore();
   const [selectedId, setSelectedId] = useState("");
+  const [copiedText, setCopiedText] = useState("");
 
   useEffect(() => {
     fetchOrders();
@@ -66,8 +67,56 @@ export default function OrdersPage() {
                 <Detail label="Phone" value={selectedOrder.phone} />
                 <Detail label="Payment" value={selectedOrder.paymentMethod} />
                 <Detail label="Amount" value={formatCurrency(selectedOrder.amount)} />
-                <Detail label="Courier" value={`${selectedOrder.shippingProvider || "Shiprocket"} - ${selectedOrder.shippingStatus || "Pending"}`} />
+                <Detail label="Courier Partner" value={selectedOrder.shiprocketAwbCode ? "Shiprocket" : "Local Delivery"} />
+                <Detail label="Shipping Status" value={selectedOrder.shippingStatus || "Pending packing"} />
               </div>
+
+              {/* Shiprocket tracking card */}
+              {selectedOrder.shiprocketAwbCode && (
+                <div className="mt-6 rounded-2xl border border-orange-200 bg-orange-50/20 p-5 space-y-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <Truck className="h-5 w-5 text-orange-600" />
+                      <p className="font-bold text-slate-900">Shiprocket Shipment Tracking</p>
+                    </div>
+                    <span className="rounded bg-orange-100 text-orange-850 px-2 py-0.5 text-xs font-black uppercase tracking-[0.05em]">
+                      Live Sync
+                    </span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-100">
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">AWB Tracking Code</p>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-black text-slate-800">{selectedOrder.shiprocketAwbCode}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(selectedOrder.shiprocketAwbCode || "");
+                            setCopiedText(selectedOrder.shiprocketAwbCode || "");
+                            setTimeout(() => setCopiedText(""), 2000);
+                          }}
+                          className="text-slate-400 hover:text-slate-950 transition"
+                          title="Copy AWB tracking code"
+                        >
+                          {copiedText === selectedOrder.shiprocketAwbCode ? (
+                            <Check className="h-3.5 w-3.5 text-emerald-600" />
+                          ) : (
+                            <Copy className="h-3.5 w-3.5" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                    <a
+                      href={`https://shiprocket.co/tracking/${selectedOrder.shiprocketAwbCode}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex h-9 items-center justify-center rounded-full bg-slate-900 hover:bg-slate-800 text-white px-4 text-xs font-bold transition gap-1.5"
+                    >
+                      Track Order <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                </div>
+              )}
               <div className="mt-6 rounded-2xl bg-slate-50 p-5">
                 <p className="font-bold text-slate-950">Status messages</p>
                 <div className="mt-4 space-y-3">

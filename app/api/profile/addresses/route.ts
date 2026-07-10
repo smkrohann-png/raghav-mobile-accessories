@@ -13,7 +13,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const addresses = db.getAddressesByUserId(session.userId);
+    const addresses = await db.getAddressesByUserId(session.userId);
     return NextResponse.json({ addresses });
   } catch (error) {
     console.error("Get addresses error:", error);
@@ -47,24 +47,24 @@ export async function POST(req: Request) {
 
     // If this is default, unset other defaults
     if (isDefault) {
-      const addresses = db.getAddressesByUserId(session.userId);
-      addresses.forEach((addr) => {
+      const addresses = await db.getAddressesByUserId(session.userId);
+      addresses.forEach(async (addr) => {
         if (addr.isDefault) {
-          db.updateAddress(addr.id, { isDefault: false });
+          await db.updateAddress(addr.id, { isDefault: false });
         }
       });
     }
 
-    const address = db.createAddress({
-      userId: session.userId,
-      fullName,
-      phone,
-      street,
-      city,
-      state,
-      pincode,
-      isDefault: isDefault || false,
-    });
+    const address = await db.createAddress({
+          userId: session.userId,
+          fullName,
+          phone,
+          street,
+          city,
+          state,
+          pincode,
+          isDefault: isDefault || false,
+        });
 
     return NextResponse.json(
       {

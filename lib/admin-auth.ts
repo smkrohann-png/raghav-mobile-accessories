@@ -9,7 +9,7 @@ export async function requireAdmin() {
     return { error: NextResponse.json({ error: "Not authenticated" }, { status: 401 }) };
   }
 
-  const user = db.getUserById(session.userId);
+  const user = await db.getUserById(session.userId);
   if (!user || user.role !== "admin") {
     return { error: NextResponse.json({ error: "Unauthorized - Admin only" }, { status: 403 }) };
   }

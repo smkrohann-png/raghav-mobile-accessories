@@ -13,7 +13,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const orders = db.getOrdersByUserId(session.userId);
+    const orders = await db.getOrdersByUserId(session.userId);
     return NextResponse.json({ orders });
   } catch (error) {
     console.error("Get orders error:", error);

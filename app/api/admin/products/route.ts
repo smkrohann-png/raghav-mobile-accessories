@@ -7,7 +7,7 @@ import type { Product } from "@/types/product";
 export async function GET() {
   const auth = await requireAdmin();
   if (auth.error) return auth.error;
-  return NextResponse.json({ products: db.getAllProducts() });
+  return NextResponse.json({ products: await db.getAllProducts() });
 }
 
 export async function POST(req: Request) {
@@ -15,7 +15,7 @@ export async function POST(req: Request) {
   if (auth.error) return auth.error;
 
   const body = await req.json();
-  const product = db.createProduct(normalizeProduct(body));
+  const product = await db.createProduct(normalizeProduct(body));
   return NextResponse.json({ product }, { status: 201 });
 }
 

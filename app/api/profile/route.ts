@@ -13,7 +13,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const user = db.getUserById(session.userId);
+    const user = await db.getUserById(session.userId);
     if (!user) {
       return NextResponse.json(
         { error: "User not found" },
@@ -22,10 +22,10 @@ export async function GET(req: Request) {
     }
 
     // Get user's addresses
-    const addresses = db.getAddressesByUserId(session.userId);
+    const addresses = await db.getAddressesByUserId(session.userId);
 
     // Get user's orders
-    const orders = db.getOrdersByUserId(session.userId);
+    const orders = await db.getOrdersByUserId(session.userId);
 
     return NextResponse.json({
       user: {
@@ -67,7 +67,7 @@ export async function PUT(req: Request) {
     const body = await req.json();
     const { firstName, lastName, phone, email } = body;
 
-    const user = db.getUserById(session.userId);
+    const user = await db.getUserById(session.userId);
     if (!user) {
       return NextResponse.json(
         { error: "User not found" },
@@ -83,7 +83,7 @@ export async function PUT(req: Request) {
           { status: 400 }
         );
       }
-      const existingUser = db.getUserByEmail(email);
+      const existingUser = await db.getUserByEmail(email);
       if (existingUser) {
         return NextResponse.json(
           { error: "Email already in use" },
@@ -99,12 +99,12 @@ export async function PUT(req: Request) {
       );
     }
 
-    const updatedUser = db.updateUser(session.userId, {
-      firstName: firstName || user.firstName,
-      lastName: lastName || user.lastName,
-      phone: phone || user.phone,
-      email: email || user.email,
-    });
+    const updatedUser = await db.updateUser(session.userId, {
+          firstName: firstName || user.firstName,
+          lastName: lastName || user.lastName,
+          phone: phone || user.phone,
+          email: email || user.email,
+        });
 
     if (!updatedUser) {
       return NextResponse.json(

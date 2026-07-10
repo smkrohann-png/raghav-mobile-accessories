@@ -23,7 +23,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const user = db.getUserById(session.userId);
+    const user = await db.getUserById(session.userId);
     if (!user || !user.password) {
       return NextResponse.json(
         { error: "User not found" },
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
 
     // Hash and update
     const hashedNewPassword = await hashPassword(newPassword);
-    db.updateUser(session.userId, { password: hashedNewPassword });
+    await db.updateUser(session.userId, { password: hashedNewPassword });
 
     return NextResponse.json({
       message: "Password changed successfully",

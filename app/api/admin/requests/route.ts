@@ -6,5 +6,5 @@ import { db } from "@/lib/db/memory";
 export async function GET() {
   const auth = await requireAdmin();
   if (auth.error) return auth.error;
-  return NextResponse.json({ requests: db.getAllRequests() });
+  return NextResponse.json({ requests: await db.getAllRequests() });
 }

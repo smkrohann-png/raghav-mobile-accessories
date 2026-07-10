@@ -22,20 +22,20 @@ export async function POST(req: Request) {
       (identifier.toLowerCase() === adminEmail.toLowerCase() || identifier.toLowerCase() === "admin") &&
       password === adminPassword;
 
-    let user = db.getUserByIdentifier(identifier);
+    let user = await db.getUserByIdentifier(identifier);
     if (isConfiguredAdmin && !user) {
-      user = db.createUser({
-        username: "admin",
-        email: adminEmail,
-        password: await hashPassword(password),
-        firstName: "Raghav",
-        lastName: "Admin",
-        phone: process.env.ADMIN_PHONE || "9999999999",
-        role: "admin",
-      });
-      db.createCart(user.id);
+      user = await db.createUser({
+              username: "admin",
+              email: adminEmail,
+              password: await hashPassword(password),
+              firstName: "Raghav",
+              lastName: "Admin",
+              phone: process.env.ADMIN_PHONE || "9999999999",
+              role: "admin",
+            });
+      await db.createCart(user.id);
     } else if (isConfiguredAdmin && user && user.role !== "admin") {
-      user = db.updateUser(user.id, { role: "admin", username: "admin" }) || user;
+      user = await db.updateUser(user.id, { role: "admin", username: "admin" }) || user;
     }
 
     // Find user

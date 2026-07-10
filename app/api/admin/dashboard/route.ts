@@ -13,7 +13,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const user = db.getUserById(session.userId);
+    const user = await db.getUserById(session.userId);
     if (!user || user.role !== "admin") {
       return NextResponse.json(
         { error: "Unauthorized - Admin only" },
@@ -22,17 +22,21 @@ export async function GET(req: Request) {
     }
 
     // Get all orders for dashboard
-    const allOrders = db.getAllOrders();
+    const allOrders = await db.getAllOrders();
+    const allUsers = await db.getAllUsers();
+    const allReviews = await db.getAllReviews();
+    const allRequests = await db.getAllRequests();
+    const allProducts = await db.getAllProducts();
 
     const stats = {
       totalOrders: allOrders.length,
       totalRevenue: allOrders.reduce((sum, order) => sum + order.amount, 0),
       pendingOrders: allOrders.filter((o) => o.status === "Pending").length,
       completedOrders: allOrders.filter((o) => o.status === "Delivered").length,
-      totalUsers: db.getAllUsers().filter((candidate) => candidate.role === "customer").length,
-      pendingReviews: db.getAllReviews().filter((review) => review.status === "Pending").length,
-      newRequests: db.getAllRequests().filter((request) => request.status === "New").length,
-      totalProducts: db.getAllProducts().length,
+      totalUsers: allUsers.filter((candidate) => candidate.role === "customer").length,
+      pendingReviews: allReviews.filter((review) => review.status === "Pending").length,
+      newRequests: allRequests.filter((request) => request.status === "New").length,
+      totalProducts: allProducts.length,
     };
 
     const recentOrders = allOrders.slice(-10).reverse();

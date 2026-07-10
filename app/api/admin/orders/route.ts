@@ -14,7 +14,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const user = db.getUserById(session.userId);
+    const user = await db.getUserById(session.userId);
     if (!user || user.role !== "admin") {
       return NextResponse.json(
         { error: "Unauthorized - Admin only" },
@@ -22,7 +22,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const orders = db.getAllOrders();
+    const orders = await db.getAllOrders();
     return NextResponse.json({ orders });
   } catch (error) {
     console.error("Get all orders error:", error);

@@ -9,9 +9,10 @@ import { Container } from '@/components/ui/Container';
 
 export default function AdminOrdersPage() {
   const { user, checkAuth } = useAuthStore();
-  const { orders, fetchAllOrders, updateOrderStatus, isLoading } = useAdminStore();
+  const { orders, fetchAllOrders, updateOrderStatus, shipOrderViaShiprocket, isLoading } = useAdminStore();
   const router = useRouter();
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
+  const selectedOrderObj = orders.find((o) => o.id === selectedOrder);
 
   useEffect(() => {
     checkAuth();
@@ -113,22 +114,74 @@ export default function AdminOrdersPage() {
 
             {/* Status Update Section */}
             {selectedOrder && (
-              <div className="bg-gray-50 border-t p-6">
-                <h3 className="font-bold mb-4">Update Order Status</h3>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                  {['Pending', 'Confirmed', 'Packed', 'Shipped', 'Out For Delivery', 'Delivered', 'Cancelled'].map((status) => (
+              <div className="bg-gray-50 border-t p-6 space-y-6">
+                {/* Shiprocket booking action */}
+                {selectedOrderObj && !selectedOrderObj.shiprocketAwbCode && ['Confirmed', 'Packed', 'Pending'].includes(selectedOrderObj.status) && (
+                  <div className="rounded-2xl border border-orange-200 bg-orange-50/50 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                      <h4 className="font-bold text-slate-900 flex items-center gap-2">
+                        <span>📦 Courier Booking Ready</span>
+                        <span className="rounded bg-orange-100 text-orange-850 px-2.5 py-0.5 text-xs font-semibold">Shiprocket</span>
+                      </h4>
+                      <p className="text-sm text-slate-600 mt-1">
+                        Book courier dispatch and generate tracking ID (AWB) directly via Shiprocket.
+                      </p>
+                    </div>
                     <button
-                      key={status}
-                      onClick={() => handleStatusChange(selectedOrder, status)}
-                      className={`px-3 py-2 rounded text-sm font-medium transition ${
-                        status === 'cancelled'
-                          ? 'bg-red-100 hover:bg-red-200 text-red-700'
-                          : 'bg-blue-100 hover:bg-blue-200 text-blue-700'
-                      }`}
+                      onClick={async () => {
+                        try {
+                          await shipOrderViaShiprocket(selectedOrder);
+                          fetchAllOrders();
+                        } catch (err) {
+                          console.error("Booking error:", err);
+                        }
+                      }}
+                      disabled={isLoading}
+                      className="inline-flex h-11 items-center justify-center rounded-full bg-slate-900 hover:bg-slate-800 text-white px-6 text-sm font-bold shadow-md transition disabled:opacity-50"
                     >
-                      {status}
+                      🚀 Ship via Shiprocket
                     </button>
-                  ))}
+                  </div>
+                )}
+
+                {selectedOrderObj?.shiprocketAwbCode && (
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50/55 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                      <h4 className="font-bold text-slate-900 flex items-center gap-2">
+                        <span>✅ Dispatched via Shiprocket</span>
+                      </h4>
+                      <p className="text-sm text-slate-600 mt-1 font-mono">
+                        AWB: <strong className="text-slate-900">{selectedOrderObj.shiprocketAwbCode}</strong> · Shipment ID: {selectedOrderObj.shiprocketShipmentId}
+                      </p>
+                    </div>
+                    <a
+                      href={`https://shiprocket.co/tracking/${selectedOrderObj.shiprocketAwbCode}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-5 text-sm font-bold text-slate-800 transition"
+                    >
+                      Track Order ↗
+                    </a>
+                  </div>
+                )}
+
+                <div>
+                  <h3 className="font-bold mb-4">Manual Status Update</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                    {['Pending', 'Confirmed', 'Packed', 'Shipped', 'Out For Delivery', 'Delivered', 'Cancelled'].map((status) => (
+                      <button
+                        key={status}
+                        onClick={() => handleStatusChange(selectedOrder, status)}
+                        className={`px-3 py-2 rounded text-sm font-medium transition ${
+                          status === 'Cancelled'
+                            ? 'bg-red-100 hover:bg-red-200 text-red-700'
+                            : 'bg-blue-100 hover:bg-blue-200 text-blue-700'
+                        }`}
+                      >
+                        {status}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}

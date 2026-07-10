@@ -14,7 +14,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     }
 
     const { id } = await params;
-    const order = db.getOrderById(id);
+    const order = await db.getOrderById(id);
 
     if (!order || order.customer !== session.userId) {
       return NextResponse.json(
@@ -45,7 +45,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     }
 
     const { id } = await params;
-    const order = db.getOrderById(id);
+    const order = await db.getOrderById(id);
 
     if (!order || order.customer !== session.userId) {
       return NextResponse.json(
@@ -61,17 +61,17 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       );
     }
 
-    const updated = db.updateOrder(id, {
-      status: "Cancelled",
-      messages: [
-        ...order.messages,
-        {
+    const updated = await db.updateOrder(id, {
           status: "Cancelled",
-          text: "Order cancelled by customer",
-          time: new Date().toISOString(),
-        },
-      ],
-    });
+          messages: [
+            ...order.messages,
+            {
+              status: "Cancelled",
+              text: "Order cancelled by customer",
+              time: new Date().toISOString(),
+            },
+          ],
+        });
 
     return NextResponse.json({
       message: "Order cancelled successfully",

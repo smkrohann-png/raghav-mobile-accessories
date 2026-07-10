@@ -13,7 +13,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const user = db.getUserById(session.userId);
+    const user = await db.getUserById(session.userId);
     if (!user) {
       return NextResponse.json(
         { error: "User not found" },

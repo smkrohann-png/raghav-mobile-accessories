@@ -12,7 +12,7 @@ export async function PATCH(req: Request, context: RouteContext<"/api/admin/revi
   if (!["Approved", "Pending", "Rejected"].includes(status)) {
     return NextResponse.json({ error: "Invalid review status" }, { status: 400 });
   }
-  const review = db.updateReview(id, { status });
+  const review = await db.updateReview(id, { status });
   if (!review) return NextResponse.json({ error: "Review not found" }, { status: 404 });
   return NextResponse.json({ review });
 }

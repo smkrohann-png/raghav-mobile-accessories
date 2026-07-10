@@ -32,9 +32,25 @@ export default function CheckoutPage() {
   const [selectedAddressId, setSelectedAddressId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  // Coupon state
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountType: "percentage" | "fixed"; discountValue: number } | null>(null);
+  const [couponError, setCouponError] = useState("");
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+
   const subtotal = getTotalPrice();
-  const delivery = subtotal > 0 && subtotal < 3000 ? 99 : 0;
-  const total = subtotal + delivery;
+  const discount = useMemo(() => {
+    if (!appliedCoupon) return 0;
+    if (appliedCoupon.discountType === "percentage") {
+      return Math.round((subtotal * appliedCoupon.discountValue) / 100);
+    } else {
+      return appliedCoupon.discountValue;
+    }
+  }, [appliedCoupon, subtotal]);
+
+  const delivery = subtotal > 0 && (subtotal - discount) < 3000 ? 99 : 0;
+  const total = subtotal - discount + delivery;
 
   const defaultAddress = useMemo(() => addresses.find((address) => address.isDefault) || addresses[0], [addresses]);
   const effectiveAddressId = selectedAddressId || defaultAddress?.id || "";
@@ -45,6 +61,35 @@ export default function CheckoutPage() {
       fetchAddresses();
     });
   }, [checkAuth, fetchAddresses, fetchCart]);
+
+  async function handleApplyCoupon() {
+    if (!couponCode) return;
+    setCouponError("");
+    setIsValidatingCoupon(true);
+    try {
+      const response = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: couponCode, orderAmount: subtotal }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to validate coupon");
+      }
+      setAppliedCoupon(data.coupon);
+    } catch (err: any) {
+      setCouponError(err.message || "Invalid coupon");
+      setAppliedCoupon(null);
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  }
+
+  function handleRemoveCoupon() {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponError("");
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -77,7 +122,7 @@ export default function CheckoutPage() {
       const checkout = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ addressId }),
+        body: JSON.stringify({ addressId, couponCode: appliedCoupon?.code || undefined }),
       });
       const checkoutData = (await checkout.json()) as CheckoutResponse & { error?: string };
 
@@ -153,8 +198,35 @@ export default function CheckoutPage() {
               ) : null)}
               {!cart?.items.length ? <p className="text-sm text-slate-600">Your cart is empty.</p> : null}
             </div>
+
+            {/* Promo Code Input */}
+            <div className="mt-5 border-t border-slate-200 pt-5">
+              <p className="text-sm font-bold text-slate-800 mb-2">Have a Promo Code?</p>
+              {appliedCoupon ? (
+                <div className="flex items-center justify-between rounded-xl bg-orange-50 border border-orange-200 px-3 py-2 text-sm font-semibold text-orange-850">
+                  <span>{appliedCoupon.code} applied (-₹{discount})</span>
+                  <button type="button" onClick={handleRemoveCoupon} className="text-orange-600 hover:text-orange-800 text-xs font-bold underline ml-2">Remove</button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Enter code"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value)}
+                    className="flex-1 min-w-0 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none uppercase font-semibold focus:border-orange-400"
+                  />
+                  <button type="button" onClick={handleApplyCoupon} disabled={isValidatingCoupon || !couponCode} className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white hover:bg-slate-800 disabled:opacity-50">
+                    {isValidatingCoupon ? "..." : "Apply"}
+                  </button>
+                </div>
+              )}
+              {couponError ? <p className="mt-2 text-xs font-semibold text-rose-600">{couponError}</p> : null}
+            </div>
+
             <div className="mt-6 space-y-3 border-t border-slate-200 pt-5 text-sm">
               <Row label="Subtotal" value={formatCurrency(subtotal)} />
+              {discount > 0 ? <Row label="Coupon Discount" value={`-${formatCurrency(discount)}`} /> : null}
               <Row label="Delivery" value={delivery === 0 ? "Free" : formatCurrency(delivery)} />
             </div>
             <div className="mt-6 flex items-center justify-between border-t border-slate-200 pt-5">
