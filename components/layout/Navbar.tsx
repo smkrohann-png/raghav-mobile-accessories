@@ -22,9 +22,9 @@ import { useAuthStore } from "@/store/auth";
 const links = [
   { href: "/", label: "Home" },
   { href: "/products", label: "Products" },
-  { href: "/explore", label: "Book Repair" },
+  { href: "/explore", label: "Explore" },
   { href: "/reviews", label: "Reviews" },
-  { href: "/support", label: "Contact" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export function Navbar() {

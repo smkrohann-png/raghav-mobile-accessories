@@ -10,7 +10,10 @@ import { Section } from "@/components/ui/Section";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { storeInfo } from "@/lib/store-info";
 
+type RequestType = "contact" | "complaint" | "repair";
+
 export default function ContactPage() {
+  const [requestType, setRequestType] = useState<RequestType>("contact");
   const [sent, setSent] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -20,45 +23,109 @@ export default function ContactPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        kind: "contact",
+        kind: requestType,
         name: formData.get("name"),
         email: formData.get("email"),
-        subject: `Phone model: ${formData.get("phoneModel") || "Not shared"}`,
+        phone: formData.get("phone"),
+        subject: formData.get("subject") || requestType,
         message: formData.get("message"),
+        meta: {
+          deviceModel: formData.get("deviceModel"),
+          issueType: formData.get("issueType"),
+        }
       }),
     });
     if (response.ok) {
       event.currentTarget.reset();
       setSent(true);
+      setTimeout(() => setSent(false), 5000);
     }
   }
 
   return (
-    <Section muted>
+    <Section muted className="pt-24 pb-16 min-h-screen">
       <Container>
         <SectionTitle
-          eyebrow="Contact"
-          title="Need help matching an accessory?"
-          description="Share your phone model and the accessory you need. The response can stay practical, fast and compatibility-first."
+          eyebrow="Get In Touch"
+          title="How can we help you today?"
+          description="Select a category below so we can assist you as fast as possible."
         />
-        <div className="grid gap-6 lg:grid-cols-[0.75fr_1fr]">
+        <div className="grid gap-8 lg:grid-cols-[0.8fr_1fr]">
           <div className="space-y-4">
             <ContactTile icon={Phone} title={storeInfo.phone} text="Call and WhatsApp support" />
             <ContactTile icon={Mail} title={storeInfo.email} text="Product support and bulk orders" />
             <ContactTile icon={MapPin} title={storeInfo.shortAddress} text="Yamunanagar local store and dispatch" />
           </div>
-          <form onSubmit={handleSubmit} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Input name="name" placeholder="Name" required />
-              <Input name="phoneModel" placeholder="Phone model" />
+
+          <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            {/* Tabs */}
+            <div className="flex border-b border-slate-200">
+              {[
+                { id: "contact", label: "Contact Us" },
+                { id: "complaint", label: "Complaint" },
+                { id: "repair", label: "Book Repair" },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setRequestType(tab.id as RequestType)}
+                  className={`flex-1 py-4 text-sm font-bold transition-colors ${
+                    requestType === tab.id
+                      ? "bg-orange-50 text-orange-600 border-b-2 border-orange-600"
+                      : "bg-white text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
-            <div className="mt-4">
-              <Input name="email" placeholder="Email address" type="email" required />
-            </div>
-            <textarea name="message" className="mt-4 min-h-40 w-full resize-none rounded-3xl border border-slate-200 bg-white p-5 text-sm outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="Tell us what you are looking for" required />
-            <Button className="mt-4 w-full sm:w-auto">Send message</Button>
-            {sent ? <p className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">Message admin panel me chala gaya hai.</p> : null}
-          </form>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="p-6">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Input name="name" placeholder="Full Name" required />
+                <Input name="phone" placeholder="Phone Number" type="tel" required />
+              </div>
+              
+              <div className="mt-4">
+                <Input name="email" placeholder="Email Address (Optional)" type="email" />
+              </div>
+
+              {requestType === "contact" && (
+                <div className="mt-4">
+                  <Input name="subject" placeholder="What is this regarding?" required />
+                </div>
+              )}
+
+              {requestType === "complaint" && (
+                <div className="mt-4">
+                  <Input name="subject" placeholder="Order ID or Product Name" required />
+                </div>
+              )}
+
+              {requestType === "repair" && (
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <Input name="deviceModel" placeholder="Device Model (e.g., iPhone 13)" required />
+                  <Input name="issueType" placeholder="Issue (e.g., Screen broken)" required />
+                </div>
+              )}
+
+              <textarea 
+                name="message" 
+                className="mt-4 min-h-[140px] w-full resize-none rounded-2xl border border-slate-200 bg-white p-5 text-sm outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100" 
+                placeholder={
+                  requestType === "repair" ? "Describe the issue in detail..." :
+                  requestType === "complaint" ? "Please explain your complaint..." :
+                  "Tell us what you need help with..."
+                } 
+                required 
+              />
+              
+              <div className="mt-6 flex items-center gap-4">
+                <Button className="w-full sm:w-auto px-8">Submit Request</Button>
+                {sent && <p className="text-sm font-bold text-emerald-600">Your request has been submitted successfully!</p>}
+              </div>
+            </form>
+          </div>
         </div>
       </Container>
     </Section>
@@ -75,7 +142,7 @@ function ContactTile({
   text: string;
 }) {
   return (
-    <div className="flex gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="flex gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
       <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-50 text-orange-600">
         <Icon className="h-5 w-5" />
       </span>
