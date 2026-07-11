@@ -406,7 +406,7 @@ export class UnifiedDB {
   // ===== PRODUCT OPERATIONS =====
   async getAllProducts(): Promise<Product[]> {
     if (isMongoDBConfigured()) {
-      await connectToDatabase();
+      await this.init();
       return ProductModel.find().lean();
     }
     return Array.from(this.products.values());
