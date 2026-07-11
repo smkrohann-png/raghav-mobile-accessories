@@ -1,18 +1,13 @@
 "use client";
-import Link from "next/link";
-import Image from "next/image";
 import {
-  ArrowRight,
   CheckCircle2,
   MapPin,
   PackageCheck,
   ShoppingBag,
   Truck,
-  
 } from "lucide-react";
 import { motion } from "framer-motion";
 
-import { categories } from "@/data/storefront";
 import { Container } from "@/components/ui/Container";
 import { Section } from "@/components/ui/Section";
 
@@ -150,18 +145,9 @@ const deliverySteps = [
   },
 ];
 
-const presence = [
-  "Premium Mobile Accessories",
-  "Fast Dispatch",
-  "Cash On Delivery",
-  "WhatsApp Support",
-  "Quality Checked Products",
-  "India Wide Delivery",
-];
-
 export function WhyChooseRaghav() {
   return (
-    <Section className="bg-slate-50 py-20 lg:py-24">
+    <Section className="bg-slate-50 pt-0 pb-16 lg:pt-0 lg:pb-20">
       <Container>
 
         {/* Heading */}
@@ -244,6 +230,24 @@ export function WhyChooseRaghav() {
           ))}
 
         </div>
+      
+{/* Store Highlights */}
+
+<section className="relative left-1/2 mt-20 w-screen -translate-x-1/2  bg-slate-900 px-8 py-20 text-white shadow-2xl sm:px-12 lg:px-20">
+  <div className="mx-auto max-w-3xl text-center">
+    <MapPin className="mx-auto h-16 w-16 text-orange-500" />
+
+    <h3 className="mt-6 text-4xl font-black">
+      Store Highlights
+    </h3>
+
+    <p className="mt-6 text-lg leading-8 text-slate-300">
+      Premium Accessories | Fast Dispatch | Cash On Delivery | WhatsApp Support | Quality Checked Products | India Wide Delivery
+    </p>
+  </div>
+</section>
+
+
                 {/* Delivery Process */}
 
         <div className="mt-20">
@@ -291,30 +295,6 @@ export function WhyChooseRaghav() {
           </div>
         </div>
 
-        {/* Store Highlights */}
-
-        <div className="mt-20">
-          <div className="mb-10 text-center">
-            <h3 className="text-3xl font-black text-slate-950">
-              Store Highlights
-            </h3>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {presence.map((item) => (
-              <div
-                key={item}
-                className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-              >
-                <MapPin className="h-5 w-5 text-orange-600" />
-
-                <span className="font-semibold text-slate-700">
-                  {item}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
 </Container>
     </Section>
   );

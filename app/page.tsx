@@ -2,6 +2,7 @@ import { BrandStrip } from "@/components/sections/HomeSections";
 import { Hero } from "@/components/sections/Hero";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { Container } from "@/components/ui/Container";
 
 export default function HomePage() {
   return (
@@ -9,27 +10,33 @@ export default function HomePage() {
       <Hero />
       <BrandStrip />
 
-      <section className="bg-slate-900 py-16 sm:py-20">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-3xl font-black text-white sm:text-4xl">
-              Ready to Upgrade Your Experience?
-            </h2>
-            <p className="mt-4 text-lg text-slate-300">
-              Discover our premium collection of mobile accessories designed for everyday performance.
-            </p>
-            <div className="mt-8 flex justify-center">
-              <Link
-                href="/shop"
-                className="group inline-flex items-center gap-2 rounded-full bg-orange-600 px-8 py-4 text-lg font-bold text-white transition-all hover:bg-orange-500 hover:shadow-lg hover:shadow-orange-600/25"
-              >
-                Shop Now
-                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+<section className="bg-white py-16">
+  <Container>
+    <div className="mx-auto max-w-6xl overflow-hidden rounded-[36px] bg-slate-950 px-8 py-14 shadow-2xl sm:px-12 lg:px-20">
+
+      <div className="mx-auto max-w-4xl text-center">
+        <h2 className="text-2xl font-black leading-tight text-white sm:text-3xl lg:text-4xl">
+          Discover Premium Mobile Accessories Designed for Performance
+        </h2>
+
+        <p className="mx-auto mt-5 max-w-3xl text-base leading-7 text-slate-300 lg:text-lg">
+          Every product
+          is chosen for its quality, reliability, and value, backed by secure
+          shopping, fast shipping, Cash on Delivery, and dedicated customer
+          support.
+        </p>
+
+        <Link
+          href="/products"
+          className="mt-8 inline-flex items-center justify-center rounded-full bg-orange-500 px-8 py-3 font-semibold text-white! transition duration-300 hover:bg-orange-600"
+        >
+          Shop Now
+        </Link>
+      </div>
+
+    </div>
+  </Container>
+</section>
     </>
   );
 }

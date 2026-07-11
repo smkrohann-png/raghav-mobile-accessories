@@ -21,6 +21,9 @@ interface AuthStore {
     phone: string;
   }) => Promise<void>;
   logout: () => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
+  verifyOTP: (email: string, otp: string) => Promise<string>;
+  resetPassword: (resetToken: string, password: string) => Promise<void>;
   clearError: () => void;
 }
 
@@ -95,6 +98,46 @@ export const useAuthStore = create<AuthStore>((set) => ({
     } catch (error: unknown) {
       const message = getApiErrorMessage(error, "Logout failed");
       set({ error: message });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  forgotPassword: async (email) => {
+    try {
+      set({ isLoading: true, error: null });
+      await axios.post("/api/auth/forgot-password", { email });
+    } catch (error: unknown) {
+      const message = getApiErrorMessage(error, "Failed to initiate reset");
+      set({ error: message });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  verifyOTP: async (email, otp) => {
+    try {
+      set({ isLoading: true, error: null });
+      const { data } = await axios.post("/api/auth/verify-otp", { email, otp });
+      return data.resetToken;
+    } catch (error: unknown) {
+      const message = getApiErrorMessage(error, "Invalid OTP");
+      set({ error: message });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  resetPassword: async (resetToken, password) => {
+    try {
+      set({ isLoading: true, error: null });
+      await axios.post("/api/auth/reset-password", { resetToken, password });
+    } catch (error: unknown) {
+      const message = getApiErrorMessage(error, "Failed to reset password");
+      set({ error: message });
+      throw error;
     } finally {
       set({ isLoading: false });
     }

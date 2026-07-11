@@ -232,6 +232,21 @@ export function Navbar() {
 
               <div className="grid gap-1 p-3">
 
+                <form action="/search" method="get" className="relative mb-2 flex h-12 items-center rounded-2xl border border-slate-200 bg-slate-50 px-4">
+                  <Search className="h-5 w-5 text-slate-400" />
+                  <input
+                    type="search"
+                    name="q"
+                    placeholder="Search products..."
+                    className="ml-3 h-full w-full bg-transparent text-[15px] font-semibold text-slate-700 outline-none placeholder:text-slate-400"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        setMobileOpen(false);
+                      }
+                    }}
+                  />
+                </form>
+
                 {links.map((item) => (
 
                   <MobileNavItem

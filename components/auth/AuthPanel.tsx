@@ -43,7 +43,7 @@ export function AuthPanel({ mode }: { mode: AuthMode }) {
   const [localError, setLocalError] = useState("");
   const [loginRole, setLoginRole] = useState<"customer" | "admin">("customer");
   const router = useRouter();
-  const { login, register, isLoading, error, clearError } = useAuthStore();
+  const { login, register, forgotPassword, verifyOTP, resetPassword, isLoading, error, clearError } = useAuthStore();
 
   async function handleSubmit(formData: FormData) {
     setSubmitted(false);
@@ -82,6 +82,40 @@ export function AuthPanel({ mode }: { mode: AuthMode }) {
         });
         setSubmitted(true);
         router.push("/profile");
+        return;
+      }
+
+      if (mode === "forgot") {
+        const email = String(formData.get("email"));
+        await forgotPassword(email);
+        sessionStorage.setItem("reset_email", email);
+        setSubmitted(true);
+        setTimeout(() => router.push("/verify-otp"), 1500);
+        return;
+      }
+
+      if (mode === "otp") {
+        const email = sessionStorage.getItem("reset_email");
+        if (!email) throw new Error("Session expired. Please try again.");
+        const otp = String(formData.get("otp"));
+        const token = await verifyOTP(email, otp);
+        sessionStorage.setItem("reset_token", token);
+        setSubmitted(true);
+        setTimeout(() => router.push("/reset-password"), 1500);
+        return;
+      }
+
+      if (mode === "reset") {
+        const token = sessionStorage.getItem("reset_token");
+        if (!token) throw new Error("Session expired. Please try again.");
+        const password = String(formData.get("password"));
+        const confirm = String(formData.get("confirmPassword"));
+        if (password !== confirm) throw new Error("Passwords do not match");
+        await resetPassword(token, password);
+        setSubmitted(true);
+        sessionStorage.removeItem("reset_email");
+        sessionStorage.removeItem("reset_token");
+        setTimeout(() => router.push("/login"), 1500);
         return;
       }
 
@@ -128,15 +162,15 @@ export function AuthPanel({ mode }: { mode: AuthMode }) {
           </div>
         ) : null}
         {mode === "login" ? <Input className="mb-4" name="identifier" placeholder="Username or email" required autoComplete="username" /> : null}
-        {mode === "register" ? <Input className="mb-4" name="email" placeholder="Email address" required type="email" autoComplete="email" /> : null}
+        {mode === "register" || mode === "forgot" ? <Input className="mb-4" name="email" placeholder="Email address" required type="email" autoComplete="email" /> : null}
         {mode === "register" ? <Input className="mb-4" name="phone" placeholder="Phone number" required inputMode="numeric" /> : null}
         {mode === "login" || mode === "register" ? <Input className="mb-4" name="password" placeholder="Password" required type="password" /> : null}
         {mode === "register" ? <Input className="mb-4" name="confirmPassword" placeholder="Confirm password" required type="password" /> : null}
-        {mode === "otp" ? <Input className="mb-4 text-center tracking-[0.45em]" maxLength={6} placeholder="000000" required /> : null}
+        {mode === "otp" ? <Input className="mb-4 text-center tracking-[0.45em]" name="otp" maxLength={6} placeholder="000000" required /> : null}
         {mode === "reset" ? (
           <div className="grid gap-4">
-            <Input placeholder="New password" required type="password" />
-            <Input placeholder="Confirm password" required type="password" />
+            <Input name="password" placeholder="New password" required type="password" />
+            <Input name="confirmPassword" placeholder="Confirm password" required type="password" />
           </div>
         ) : null}
         <Button className="mt-5 w-full" disabled={isLoading} size="lg" type="submit">

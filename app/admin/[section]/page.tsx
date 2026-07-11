@@ -256,7 +256,7 @@ export default function AdminModulePage() {
                 event.currentTarget.reset();
                 setSaved("Coupon created successfully.");
                 setTimeout(() => setSaved(""), 3000);
-              } catch (e) {
+              } catch {
                 // error handled by store state
               }
             }}
@@ -474,7 +474,7 @@ export default function AdminModulePage() {
                   {!shiprocketOrders.length && !isLoading ? (
                     <tr>
                       <td colSpan={6} className="px-5 py-12 text-center text-sm font-semibold text-slate-500">
-                        No orders have been shipped via Shiprocket yet. Go to Orders page and click "Ship via Shiprocket" to book a shipment!
+                        No orders have been shipped via Shiprocket yet. Go to Orders page and click &quot;Ship via Shiprocket&quot; to book a shipment!
                       </td>
                     </tr>
                   ) : null}
