@@ -68,21 +68,23 @@ export default function ProfilePage() {
     router.push("/login");
   }
 
-  if (authLoading) {
+  useEffect(() => {
+    if (!authLoading && (!isAuthenticated || !user)) {
+      router.replace("/login");
+    }
+  }, [authLoading, isAuthenticated, user, router]);
+
+  if (authLoading || !isAuthenticated || !user) {
     return (
       <Section muted>
         <Container className="max-w-2xl">
           <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center text-sm font-semibold text-slate-600 shadow-sm">
-            Checking account...
+            {authLoading ? "Checking account..." : "Redirecting to login..."}
           </div>
         </Container>
       </Section>
     );
   }
-if (!isAuthenticated || !user) {
-  router.replace("/login");
-  return null;
-}
 
   return (
     <Section muted>
