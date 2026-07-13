@@ -11,10 +11,10 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const variants = {
-  primary: "bg-orange-600 text-white shadow-[0_16px_34px_rgba(234,88,12,0.26)] hover:bg-orange-700",
+  primary: "bg-orange-600 !text-white shadow-[0_16px_34px_rgba(234,88,12,0.26)] hover:bg-orange-700",
   secondary: "border border-slate-200 bg-white text-slate-950 shadow-sm hover:border-orange-200 hover:bg-orange-50",
   ghost: "text-slate-700 hover:bg-slate-100 hover:text-slate-950",
-  destructive: "bg-rose-600 text-white shadow-[0_16px_34px_rgba(225,29,72,0.22)] hover:bg-rose-700",
+  destructive: "bg-rose-600 !text-white shadow-[0_16px_34px_rgba(225,29,72,0.22)] hover:bg-rose-700",
 };
 
 const sizes = {

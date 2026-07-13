@@ -57,13 +57,13 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
     const updatedCart = await db.updateCart(cart.id, cart);
 
-    const items = updatedCart.items.map(async (item) => {
+    const items = await Promise.all(updatedCart.items.map(async (item) => {
       const prod = await db.getProductById(item.productId);
       return {
         ...item,
         product: prod,
       };
-    });
+    }));
 
     return NextResponse.json({
       message: "Cart updated",
@@ -113,13 +113,13 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     cart.items.splice(itemIndex, 1);
     const updatedCart = await db.updateCart(cart.id, cart);
 
-    const items = updatedCart.items.map(async (item) => {
+    const items = await Promise.all(updatedCart.items.map(async (item) => {
       const prod = await db.getProductById(item.productId);
       return {
         ...item,
         product: prod,
       };
-    });
+    }));
 
     return NextResponse.json({
       message: "Item removed from cart",

@@ -19,13 +19,13 @@ export async function GET(req: Request) {
     }
 
     // Map product IDs to full product details
-    const items = cart.items.map(async (item) => {
+    const items = await Promise.all(cart.items.map(async (item) => {
       const product = await db.getProductById(item.productId);
       return {
         ...item,
         product,
       };
-    });
+    }));
 
     return NextResponse.json({
       id: cart.id,
@@ -106,13 +106,13 @@ export async function POST(req: Request) {
 
     const updatedCart = await db.updateCart(cart.id, cart);
 
-    const items = updatedCart.items.map(async (item) => {
+    const items = await Promise.all(updatedCart.items.map(async (item) => {
       const prod = await db.getProductById(item.productId);
       return {
         ...item,
         product: prod,
       };
-    });
+    }));
 
     return NextResponse.json({
       message: "Item added to cart",
