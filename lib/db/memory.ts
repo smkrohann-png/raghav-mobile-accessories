@@ -236,66 +236,11 @@ export class UnifiedDB {
   }
 
   private load(): void {
-    if (!fs.existsSync(dbFilePath)) return;
-    try {
-      const snapshot = JSON.parse(fs.readFileSync(dbFilePath, "utf8")) as DbSnapshot;
-      this.idCounters = {
-        ...this.idCounters,
-        ...snapshot.idCounters,
-        coupon: snapshot.idCounters?.coupon ?? this.idCounters.coupon ?? 0,
-      };
-
-      for (const user of snapshot.users ?? []) {
-        this.users.set(user.id, user);
-        this.users.set(`email_${user.email}`, user);
-        if (user.username) this.users.set(`username_${user.username.toLowerCase()}`, user);
-      }
-      for (const cart of snapshot.carts ?? []) {
-        this.carts.set(cart.id, cart);
-        this.carts.set(`user_${cart.userId}`, cart);
-      }
-      for (const address of snapshot.addresses ?? []) {
-        this.addresses.set(address.id, address);
-      }
-      for (const order of snapshot.orders ?? []) {
-        this.orders.set(order.id, order);
-      }
-      for (const session of snapshot.sessions ?? []) {
-        this.sessions.set(session.id, session);
-        this.sessions.set(`token_${session.token}`, session);
-      }
-      for (const product of snapshot.products ?? []) {
-        this.products.set(product.id, product);
-      }
-      for (const review of snapshot.reviews ?? []) {
-        if (review.id) this.reviews.set(review.id, review);
-      }
-      for (const request of snapshot.requests ?? []) {
-        this.requests.set(request.id, request);
-      }
-      for (const coupon of snapshot.coupons ?? []) {
-        this.coupons.set(coupon.id, coupon);
-        this.coupons.set(`code_${coupon.code.toUpperCase()}`, coupon);
-      }
-      if (snapshot.settings) {
-        this.settings = { ...this.settings, ...snapshot.settings };
-      }
-    } catch (error) {
-      console.error("Failed to load file database:", error);
-    }
+    // Local JSON saving has been permanently removed
   }
 
   private persist(): void {
-    if (isMongoDBConfigured()) return; // Don't persist to file if using Mongo
-    try {
-      fs.mkdirSync(path.dirname(dbFilePath), { recursive: true });
-      const snapshot: DbSnapshot = {
-        users: Array.from(this.users.entries())
-          .filter(([key]) => !key.startsWith("email_"))
-          .map(([, user]) => user),
-        carts: Array.from(this.carts.entries())
-          .filter(([key]) => !key.startsWith("user_"))
-    // Local JSON saving has been permanently removed per user request.
+    // Local JSON saving has been permanently removed
   }
 
   // ===== USER OPERATIONS =====
