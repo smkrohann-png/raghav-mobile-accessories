@@ -487,6 +487,17 @@ export class UnifiedDB {
     return updated;
   }
 
+  async deleteReview(id: string): Promise<boolean> {
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      const result = await ReviewModel.deleteOne({ id });
+      return result.deletedCount === 1;
+    }
+    const deleted = this.reviews.delete(id);
+    if (deleted) this.persist();
+    return deleted;
+  }
+
   // ===== REQUEST OPERATIONS =====
   async createRequest(data: Omit<AdminRequest, "id" | "status" | "createdAt">): Promise<AdminRequest> {
     const id = `request_${++this.idCounters.request}`;

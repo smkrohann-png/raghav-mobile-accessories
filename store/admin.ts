@@ -35,6 +35,7 @@ interface AdminStore {
   deleteProduct: (id: string) => Promise<void>;
   fetchReviews: () => Promise<void>;
   updateReviewStatus: (id: string, status: Review["status"]) => Promise<void>;
+  deleteReview: (id: string) => Promise<void>;
   fetchRequests: () => Promise<void>;
   updateRequestStatus: (id: string, status: AdminRequest["status"]) => Promise<void>;
   fetchSettings: () => Promise<void>;
@@ -163,6 +164,11 @@ export const useAdminStore = create<AdminStore>((set) => ({
   updateReviewStatus: async (id, status) => {
     const { data } = await axios.patch(`/api/admin/reviews/${id}`, { status });
     set((state) => ({ reviews: state.reviews.map((review) => (review.id === id ? data.review : review)) }));
+  },
+
+  deleteReview: async (id) => {
+    await axios.delete(`/api/admin/reviews/${id}`);
+    set((state) => ({ reviews: state.reviews.filter((review) => review.id !== id) }));
   },
 
   fetchRequests: async () => {

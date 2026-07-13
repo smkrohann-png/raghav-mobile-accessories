@@ -81,6 +81,7 @@ export default function AdminModulePage() {
     deleteProduct,
     fetchReviews,
     updateReviewStatus,
+    deleteReview,
     fetchRequests,
     updateRequestStatus,
     fetchSettings,
@@ -227,8 +228,8 @@ export default function AdminModulePage() {
                 <p className="mt-3 text-sm leading-6 text-slate-700">{review.text}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Button size="sm" onClick={() => review.id && updateReviewStatus(review.id, "Approved")}>Approve</Button>
-                  <Button size="sm" variant="secondary" onClick={() => review.id && updateReviewStatus(review.id, "Rejected")}>Reject</Button>
                   <Button size="sm" variant="ghost" onClick={() => review.id && updateReviewStatus(review.id, "Pending")}>Mark pending</Button>
+                  <Button size="sm" variant="secondary" onClick={() => review.id && deleteReview(review.id)}>Delete</Button>
                 </div>
               </article>
             ))}
@@ -573,82 +574,43 @@ function ProductForm({
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onCancel: () => void;
 }) {
-  const [visual, setVisual] = useState<Product["visual"]>(editing?.visual || "cable");
-
   return (
     <form onSubmit={onSubmit} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <Header title={editing ? "Edit product" : "Add product"} />
-      <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-2">
         <Input name="name" placeholder="Product name" defaultValue={editing?.name} required />
         <Input name="category" placeholder="Category" defaultValue={editing?.category || "Data Cables"} required />
-        <Input name="sku" placeholder="SKU" defaultValue={editing?.sku} />
         <Input name="price" placeholder="Sale price (₹)" type="number" defaultValue={editing?.price} required />
         <Input name="compareAt" placeholder="Original price (₹)" type="number" defaultValue={editing?.compareAt} />
         <Input name="stock" placeholder="Stock quantity" type="number" defaultValue={editing?.stock ?? 0} required />
         <Input name="image" placeholder="Product image URL" defaultValue={editing?.image} />
-        <Input name="tag" placeholder="Tag (e.g. New, Hot, 100W)" defaultValue={editing?.tag || "New"} />
-        <Input name="color" placeholder="Color (e.g. White, Orange)" defaultValue={editing?.color || "White"} />
-        <Input name="compatibleBrands" placeholder="Compatible brands (comma separated)" defaultValue={editing?.compatibleBrands?.join(", ")} />
         
-        <div>
-          <label className="text-xs font-bold text-slate-500 block mb-1">Color Palette Theme</label>
-          <select name="tone" defaultValue={editing?.tone || "orange"} className="h-12 w-full rounded-full border border-slate-200 bg-white px-5 text-sm font-semibold outline-none">
-            {["orange", "navy", "silver", "mint", "violet", "graphite"].map((tone) => <option key={tone}>{tone}</option>)}
-          </select>
-        </div>
+        {/* Hidden advanced fields that pass defaults back to the store */}
+        <input type="hidden" name="sku" value={editing?.sku || ""} />
+        <input type="hidden" name="tag" value={editing?.tag || "New"} />
+        <input type="hidden" name="color" value={editing?.color || "White"} />
+        <input type="hidden" name="compatibleBrands" value={editing?.compatibleBrands?.join(", ") || "All"} />
+        <input type="hidden" name="tone" value={editing?.tone || "orange"} />
+        <input type="hidden" name="visual" value={editing?.visual || "cable"} />
+        <input type="hidden" name="connector" value={editing?.connector || ""} />
+        <input type="hidden" name="power" value={editing?.power || ""} />
+        <input type="hidden" name="length" value={editing?.length || ""} />
+        <input type="hidden" name="features" value={editing?.features?.join("\n") || ""} />
 
-        <div>
-          <label className="text-xs font-bold text-slate-500 block mb-1">Product Type Render Shape</label>
-          <select
-            name="visual"
-            value={visual}
-            onChange={(e) => setVisual(e.target.value as Product["visual"])}
-            className="h-12 w-full rounded-full border border-slate-200 bg-white px-5 text-sm font-semibold outline-none"
-          >
-            {["cable", "case", "charger", "earbuds", "powerbank", "glass", "stand"].map((item) => (
-              <option key={item} value={item}>{item.toUpperCase()}</option>
-            ))}
-          </select>
+        <div className="md:col-span-2 xl:col-span-2">
+          <label className="text-xs font-bold text-slate-500 block mb-1">Description</label>
+          <textarea
+            name="description"
+            placeholder="Product description..."
+            defaultValue={editing?.description}
+            className="w-full rounded-2xl border border-slate-200 bg-white p-5 text-sm font-semibold outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400"
+            rows={4}
+          />
         </div>
-
-        {/* Category specific specs (dynamically adjusted based on product shape) */}
-        {visual === "cable" ? (
-          <>
-            <Input name="connector" placeholder="Connector (e.g. Type-C to Lightning)" defaultValue={editing?.connector} />
-            <Input name="power" placeholder="Power Output (e.g. 100W, 25W)" defaultValue={editing?.power} />
-            <Input name="length" placeholder="Cable Length (e.g. 1.2 mtr, 2 mtr)" defaultValue={editing?.length} />
-          </>
-        ) : visual === "charger" || visual === "powerbank" ? (
-          <>
-            <Input name="connector" placeholder="Ports (e.g. 2 Type-C + 1 Type-A)" defaultValue={editing?.connector} />
-            <Input name="power" placeholder="Wattage/Capacity (e.g. 33W, 20000mAh)" defaultValue={editing?.power} />
-            <Input name="length" placeholder="Warranty/Extra (e.g. 6 Months Warranty)" defaultValue={editing?.length} />
-          </>
-        ) : visual === "case" ? (
-          <>
-            <Input name="connector" placeholder="Material (e.g. Premium Silicone)" defaultValue={editing?.connector} />
-            <Input name="power" placeholder="Compatible Models (e.g. iPhone 15 Pro Max)" defaultValue={editing?.power} />
-            <Input name="length" placeholder="Design/Pattern (e.g. Translucent Frosted)" defaultValue={editing?.length} />
-          </>
-        ) : visual === "glass" ? (
-          <>
-            <Input name="connector" placeholder="Glass Type (e.g. 11D Curved Edge)" defaultValue={editing?.connector} />
-            <Input name="power" placeholder="Thickness/Specs (e.g. 9H Hardness, 0.3mm)" defaultValue={editing?.power} />
-            <Input name="length" placeholder="Feature (e.g. Privacy Matte Finish)" defaultValue={editing?.length} />
-          </>
-        ) : (
-          <>
-            <Input name="connector" placeholder="Primary Spec (e.g. BT 5.3, Metal Joint)" defaultValue={editing?.connector} />
-            <Input name="power" placeholder="Secondary Spec (e.g. 40 Hrs Playback)" defaultValue={editing?.power} />
-            <Input name="length" placeholder="Other Specs (e.g. Foldable Travel Stand)" defaultValue={editing?.length} />
-          </>
-        )}
       </div>
-      <textarea name="description" className="mt-4 min-h-24 w-full rounded-2xl border border-slate-200 p-4 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="Description details..." defaultValue={editing?.description} />
-      <textarea name="features" className="mt-4 min-h-24 w-full rounded-2xl border border-slate-200 p-4 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="One marketing feature highlight per line..." defaultValue={editing?.features?.join("\n")} />
-      <div className="mt-5 flex flex-wrap gap-2">
+      <div className="mt-6 flex flex-wrap gap-2">
         <Button type="submit">Save product</Button>
-        <Button type="button" variant="secondary" onClick={onCancel}>Cancel</Button>
+        <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
       </div>
     </form>
   );
