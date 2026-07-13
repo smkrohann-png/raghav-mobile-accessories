@@ -13,7 +13,7 @@ import type { Review } from "@/data/reviews";
 
 export default function ReviewsPage() {
   const [submitted, setSubmitted] = useState(false);
-  const [reviews, setReviews] = useState<Review[]>(approvedReviews);
+  const [reviews, setReviews] = useState<Review[]>([]);
 
   useEffect(() => {
     fetch("/api/reviews")
@@ -21,7 +21,7 @@ export default function ReviewsPage() {
       .then((data) => {
         if (Array.isArray(data.reviews)) setReviews(data.reviews);
       })
-      .catch(() => setReviews(approvedReviews));
+      .catch(() => setReviews([]));
   }, []);
 
   async function submitReview(event: FormEvent<HTMLFormElement>) {
@@ -32,7 +32,7 @@ export default function ReviewsPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name: formData.get("name"),
-        product: formData.get("product"),
+        product: "Store Service",
         rating: Number(formData.get("rating") || 5),
         text: formData.get("text"),
       }),
@@ -40,6 +40,7 @@ export default function ReviewsPage() {
     if (response.ok) {
       event.currentTarget.reset();
       setSubmitted(true);
+      alert("Thank you! Your review has been submitted successfully and is pending approval.");
     }
   }
 
@@ -54,7 +55,7 @@ export default function ReviewsPage() {
         <div className="grid gap-6 lg:grid-cols-[1fr_0.8fr]">
           <div className="grid gap-5">
             {reviews.map((review) => (
-              <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm" key={`${review.name}-${review.product}`}>
+              <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm" key={`${review.name}-${review.product}-${review.rating}`}>
                 <div className="flex gap-1 text-orange-400">
                   {Array.from({ length: review.rating }).map((_, index) => (
                     <Star className="h-4 w-4 fill-current" key={index} />
@@ -62,9 +63,16 @@ export default function ReviewsPage() {
                 </div>
                 <p className="mt-4 text-base leading-7 text-slate-700">&ldquo;{review.text}&rdquo;</p>
                 <p className="mt-5 font-black text-slate-950">{review.name}</p>
-                <p className="mt-1 text-sm font-semibold text-slate-500">{review.product}</p>
+                {review.product !== "Store Service" && (
+                  <p className="mt-1 text-sm font-semibold text-slate-500">{review.product}</p>
+                )}
               </article>
             ))}
+            {!reviews.length && (
+               <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center">
+                 <p className="text-slate-500 font-semibold">No reviews yet. Be the first to leave one!</p>
+               </div>
+            )}
           </div>
           <form
             className="h-fit rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
@@ -73,11 +81,12 @@ export default function ReviewsPage() {
             <h2 className="text-2xl font-black text-slate-950">Write a review</h2>
             <div className="mt-5 grid gap-4">
               <Input name="name" placeholder="Your name" required />
-              <Input name="product" placeholder="Product name" required />
               <select name="rating" className="h-12 rounded-full border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" defaultValue="5">
                 <option value="5">5 stars</option>
                 <option value="4">4 stars</option>
                 <option value="3">3 stars</option>
+                <option value="2">2 stars</option>
+                <option value="1">1 star</option>
               </select>
               <textarea name="text" className="min-h-36 resize-none rounded-3xl border border-slate-200 p-5 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="Share your experience" required />
             </div>
@@ -86,8 +95,8 @@ export default function ReviewsPage() {
               Submit
             </Button>
             {submitted ? (
-              <p className="mt-4 rounded-2xl bg-orange-50 px-4 py-3 text-sm font-bold text-orange-700">
-                Review admin approval ke liye pending queue me chala gaya.
+              <p className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">
+                Review submitted for approval!
               </p>
             ) : null}
           </form>

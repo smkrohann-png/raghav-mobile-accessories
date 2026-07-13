@@ -38,6 +38,7 @@ export default function ContactPage() {
     if (response.ok) {
       event.currentTarget.reset();
       setSent(true);
+      alert("Your request has been submitted successfully!");
       setTimeout(() => setSent(false), 5000);
     }
   }

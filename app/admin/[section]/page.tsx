@@ -692,11 +692,13 @@ function RequestsPanel({
   requests: ReturnType<typeof useAdminStore.getState>["requests"];
   onStatus: (id: string, status: "New" | "In Progress" | "Closed") => void;
 }) {
+  const activeRequests = requests.filter(req => req.status !== "Closed");
+
   return (
     <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
       <Header title="Website messages, support and repair requests" />
       <div className="grid gap-3 p-5">
-        {requests.map((request) => (
+        {activeRequests.map((request) => (
           <article key={request.id} className="rounded-xl border border-slate-100 p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -716,7 +718,7 @@ function RequestsPanel({
             </div>
           </article>
         ))}
-        {!requests.length ? <p className="text-sm font-semibold text-slate-500">No website requests yet.</p> : null}
+        {activeRequests.length === 0 ? <p className="text-sm font-semibold text-slate-500">No active website requests.</p> : null}
       </div>
     </section>
   );

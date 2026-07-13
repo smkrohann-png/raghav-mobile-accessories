@@ -134,20 +134,14 @@ export class UnifiedDB {
     const productsCount = await ProductModel.countDocuments();
     if (productsCount === 0) {
       await ProductModel.insertMany(seedProducts);
-    }
-
-    const reviewsCount = await ReviewModel.countDocuments();
-    if (reviewsCount === 0) {
+      
       const allReviews = [...approvedReviews, ...pendingReviews].map((r, i) => ({
         ...r,
         id: `review_${i + 1}`,
         createdAt: new Date().toISOString()
       }));
       await ReviewModel.insertMany(allReviews);
-    }
-
-    const couponsCount = await CouponModel.countDocuments();
-    if (couponsCount === 0) {
+      
       await CouponModel.insertMany([
         { id: "coupon_1", code: "RAGHAV10", discountType: "percentage", discountValue: 10, minOrderAmount: 499, isActive: true, createdAt: new Date().toISOString() },
         { id: "coupon_2", code: "WELCOME50", discountType: "fixed", discountValue: 50, minOrderAmount: 299, isActive: true, createdAt: new Date().toISOString() }
