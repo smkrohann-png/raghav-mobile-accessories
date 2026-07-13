@@ -46,8 +46,8 @@ export default function ReviewsPage() {
         const errData = await response.json();
         alert("Database Error: " + (errData.error || "Please ensure MONGODB_URI is correct."));
       }
-    } catch (error) {
-      alert("Network Error: Could not connect to the server.");
+    } catch (error: any) {
+      alert("Error: " + (error.message || "Unknown error occurred"));
     }
   }
 
