@@ -18,8 +18,9 @@ export default function ContactPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
     try {
-      const formData = new FormData(event.currentTarget);
+      const formData = new FormData(form);
       const response = await fetch("/api/requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -37,7 +38,7 @@ export default function ContactPage() {
         }),
       });
       if (response.ok) {
-        event.currentTarget.reset();
+        form.reset();
         setSent(true);
         alert("Your request has been submitted successfully!");
         setTimeout(() => setSent(false), 5000);

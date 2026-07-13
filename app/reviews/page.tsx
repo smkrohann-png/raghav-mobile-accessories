@@ -26,8 +26,9 @@ export default function ReviewsPage() {
 
   async function submitReview(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
     try {
-      const formData = new FormData(event.currentTarget);
+      const formData = new FormData(form);
       const response = await fetch("/api/reviews", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -39,7 +40,7 @@ export default function ReviewsPage() {
         }),
       });
       if (response.ok) {
-        event.currentTarget.reset();
+        form.reset();
         setSubmitted(true);
         alert("Thank you! Your review has been submitted successfully and is pending approval.");
       } else {
