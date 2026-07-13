@@ -15,6 +15,7 @@ type RequestType = "contact" | "complaint" | "repair";
 export default function ContactPage() {
   const [requestType, setRequestType] = useState<RequestType>("contact");
   const [sent, setSent] = useState(false);
+  const [modalInfo, setModalInfo] = useState<{show: boolean, type: 'success'|'error', message: string}>({ show: false, type: 'success', message: '' });
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -40,17 +41,17 @@ export default function ContactPage() {
       if (response.ok) {
         form.reset();
         setSent(true);
-        alert("Your request has been submitted successfully!");
-        setTimeout(() => setSent(false), 5000);
+        setModalInfo({ show: true, type: 'success', message: "Your request has been submitted successfully! We will get back to you soon." });
       } else {
-        alert("Error: Database connection failed. Please ensure MONGODB_URI is set correctly in Vercel.");
+        setModalInfo({ show: true, type: 'error', message: "Error: Database connection failed. Please ensure MONGODB_URI is set correctly in Vercel." });
       }
     } catch (error) {
-      alert("Network Error: Could not connect to the server.");
+      setModalInfo({ show: true, type: 'error', message: "Network Error: Could not connect to the server." });
     }
   }
 
   return (
+    <>
     <Section muted className="pt-24 pb-16 min-h-screen">
       <Container>
         <SectionTitle
@@ -130,13 +131,39 @@ export default function ContactPage() {
               
               <div className="mt-6 flex items-center gap-4">
                 <Button className="w-full sm:w-auto px-8">Submit Request</Button>
-                {sent && <p className="text-sm font-bold text-emerald-600">Your request has been submitted successfully!</p>}
               </div>
             </form>
           </div>
         </div>
       </Container>
     </Section>
+
+    {/* Custom Modal */}
+    {modalInfo.show && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity">
+        <div className="bg-white rounded-3xl shadow-xl max-w-md w-full p-8 text-center animate-in fade-in zoom-in duration-200">
+          <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${modalInfo.type === 'success' ? 'bg-emerald-100' : 'bg-red-100'} mb-6`}>
+            {modalInfo.type === 'success' ? (
+              <svg className="h-8 w-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+              </svg>
+            ) : (
+              <svg className="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            )}
+          </div>
+          <h3 className="text-2xl font-black text-slate-900 mb-2">{modalInfo.type === 'success' ? 'Success!' : 'Error'}</h3>
+          <p className="text-slate-500 font-medium mb-8 leading-relaxed">
+            {modalInfo.message}
+          </p>
+          <Button className="w-full" onClick={() => setModalInfo({ ...modalInfo, show: false })}>
+            Got it, thanks!
+          </Button>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
 
