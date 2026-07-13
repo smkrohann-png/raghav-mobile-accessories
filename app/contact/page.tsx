@@ -18,30 +18,34 @@ export default function ContactPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const response = await fetch("/api/requests", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        kind: requestType,
-        name: formData.get("name"),
-        email: formData.get("email"),
-        phone: formData.get("phone"),
-        subject: formData.get("subject") || requestType,
-        message: formData.get("message"),
-        meta: {
-          deviceModel: formData.get("deviceModel"),
-          issueType: formData.get("issueType"),
-        }
-      }),
-    });
-    if (response.ok) {
-      event.currentTarget.reset();
-      setSent(true);
-      alert("Your request has been submitted successfully!");
-      setTimeout(() => setSent(false), 5000);
-    } else {
-      alert("Error: Database connection failed. Please ensure MONGODB_URI is set correctly in Vercel.");
+    try {
+      const formData = new FormData(event.currentTarget);
+      const response = await fetch("/api/requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind: requestType,
+          name: formData.get("name"),
+          email: formData.get("email"),
+          phone: formData.get("phone"),
+          subject: formData.get("subject") || requestType,
+          message: formData.get("message"),
+          meta: {
+            deviceModel: formData.get("deviceModel"),
+            issueType: formData.get("issueType"),
+          }
+        }),
+      });
+      if (response.ok) {
+        event.currentTarget.reset();
+        setSent(true);
+        alert("Your request has been submitted successfully!");
+        setTimeout(() => setSent(false), 5000);
+      } else {
+        alert("Error: Database connection failed. Please ensure MONGODB_URI is set correctly in Vercel.");
+      }
+    } catch (error) {
+      alert("Network Error: Could not connect to the server.");
     }
   }
 

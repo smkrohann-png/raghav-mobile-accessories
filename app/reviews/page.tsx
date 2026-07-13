@@ -26,23 +26,27 @@ export default function ReviewsPage() {
 
   async function submitReview(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const response = await fetch("/api/reviews", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: formData.get("name"),
-        product: "Store Service",
-        rating: Number(formData.get("rating") || 5),
-        text: formData.get("text"),
-      }),
-    });
-    if (response.ok) {
-      event.currentTarget.reset();
-      setSubmitted(true);
-      alert("Thank you! Your review has been submitted successfully and is pending approval.");
-    } else {
-      alert("Error: Database connection failed. Please ensure MONGODB_URI is set correctly in Vercel.");
+    try {
+      const formData = new FormData(event.currentTarget);
+      const response = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.get("name"),
+          product: "Store Service",
+          rating: Number(formData.get("rating") || 5),
+          text: formData.get("text"),
+        }),
+      });
+      if (response.ok) {
+        event.currentTarget.reset();
+        setSubmitted(true);
+        alert("Thank you! Your review has been submitted successfully and is pending approval.");
+      } else {
+        alert("Error: Database connection failed. Please ensure MONGODB_URI is set correctly in Vercel.");
+      }
+    } catch (error) {
+      alert("Network Error: Could not connect to the server.");
     }
   }
 
