@@ -250,7 +250,7 @@ export class UnifiedDB {
       const id = `user_${Date.now()}`;
       return (await UserModel.create({ ...data, id })).toObject();
     }
-    const id = `user_${++this.idCounters.user}`;
+    const id = `user_${Date.now()}`;
     const user: User = {
       ...data,
       id,
@@ -352,7 +352,7 @@ export class UnifiedDB {
   }
 
   async createProduct(data: Omit<Product, "id"> & { id?: string }): Promise<Product> {
-    const id = data.id || `${data.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${++this.idCounters.product}`;
+    const id = data.id || `${data.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${Date.now()}`;
     const product: Product = { ...data, id };
     if (isMongoDBConfigured()) {
       await connectToDatabase();
@@ -384,7 +384,7 @@ export class UnifiedDB {
   }
 
   async createReview(data: Omit<Review, "id" | "status" | "createdAt">): Promise<Review> {
-    const id = `review_${++this.idCounters.review}`;
+    const id = `review_${Date.now()}`;
     const review: Review = { ...data, id, status: "Pending", createdAt: new Date().toISOString() };
     if (isMongoDBConfigured()) {
       await connectToDatabase();
@@ -421,7 +421,7 @@ export class UnifiedDB {
 
   // ===== REQUEST OPERATIONS =====
   async createRequest(data: Omit<AdminRequest, "id" | "status" | "createdAt">): Promise<AdminRequest> {
-    const id = `request_${++this.idCounters.request}`;
+    const id = `request_${Date.now()}`;
     const request: AdminRequest = { ...data, id, status: "New", createdAt: new Date().toISOString() };
     if (isMongoDBConfigured()) {
       await connectToDatabase();
@@ -483,7 +483,7 @@ export class UnifiedDB {
 
   // ===== CART OPERATIONS =====
   async createCart(userId: string): Promise<Cart> {
-    const id = `cart_${++this.idCounters.cart}`;
+    const id = `cart_${Date.now()}`;
     const cart: Cart = {
       id,
       userId,
@@ -530,7 +530,7 @@ export class UnifiedDB {
 
   // ===== ADDRESS OPERATIONS =====
   async createAddress(data: Omit<Address, "id" | "createdAt">): Promise<Address> {
-    const id = `addr_${++this.idCounters.address}`;
+    const id = `addr_${Date.now()}`;
     const address: Address = {
       ...data,
       id,
@@ -587,7 +587,7 @@ export class UnifiedDB {
 
   // ===== ORDER OPERATIONS =====
   async createOrder(data: Omit<CustomerOrder, "id">): Promise<CustomerOrder> {
-    const id = `order_${++this.idCounters.order}`;
+    const id = `order_${Date.now()}`;
     const order: CustomerOrder = { ...data, id };
     if (isMongoDBConfigured()) {
       await connectToDatabase();
@@ -637,7 +637,7 @@ export class UnifiedDB {
 
   // ===== SESSION OPERATIONS =====
   async createSession(userId: string, token: string, expiresAt: Date): Promise<AuthSession> {
-    const id = `sess_${++this.idCounters.session}`;
+    const id = `sess_${Date.now()}`;
     const session: AuthSession = {
       id,
       userId,
@@ -705,7 +705,7 @@ export class UnifiedDB {
   }
 
   async createCoupon(data: Omit<Coupon, "id" | "createdAt">): Promise<Coupon> {
-    const id = `coupon_${++this.idCounters.coupon}`;
+    const id = `coupon_${Date.now()}`;
     const coupon: Coupon = {
       ...data,
       id,
