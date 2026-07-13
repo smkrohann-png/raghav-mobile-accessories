@@ -100,9 +100,11 @@ export async function POST(
         : "Order shipped (Simulation Mode - Shiprocket not configured)",
       order: updated,
     });
-  } catch (error: unknown) {
-    console.error("Shiprocket integration error:", error);
-    const message = error instanceof Error ? error.message : "Shiprocket sync failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch (error: any) {
+    console.error("Shiprocket error:", error);
+    return NextResponse.json(
+      { error: error?.message || "Failed to ship order" },
+      { status: 500 }
+    );
   }
 }

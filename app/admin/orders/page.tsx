@@ -132,8 +132,10 @@ export default function AdminOrdersPage() {
                         try {
                           await shipOrderViaShiprocket(selectedOrder);
                           fetchAllOrders();
-                        } catch (err) {
+                          alert("Order shipped via Shiprocket!");
+                        } catch (err: any) {
                           console.error("Booking error:", err);
+                          alert("Error booking Shiprocket: " + (err.response?.data?.error || err.message || "Unknown error"));
                         }
                       }}
                       disabled={isLoading}
