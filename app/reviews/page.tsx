@@ -41,6 +41,8 @@ export default function ReviewsPage() {
       event.currentTarget.reset();
       setSubmitted(true);
       alert("Thank you! Your review has been submitted successfully and is pending approval.");
+    } else {
+      alert("Error: Database connection failed. Please ensure MONGODB_URI is set correctly in Vercel.");
     }
   }
 

@@ -295,25 +295,7 @@ export class UnifiedDB {
           .map(([, user]) => user),
         carts: Array.from(this.carts.entries())
           .filter(([key]) => !key.startsWith("user_"))
-          .map(([, cart]) => cart),
-        addresses: Array.from(this.addresses.values()),
-        orders: Array.from(this.orders.values()),
-        sessions: Array.from(this.sessions.entries())
-          .filter(([key]) => !key.startsWith("token_"))
-          .map(([, session]) => session),
-        products: Array.from(this.products.values()),
-        reviews: Array.from(this.reviews.values()),
-        requests: Array.from(this.requests.values()),
-        coupons: Array.from(this.coupons.entries())
-          .filter(([key]) => !key.startsWith("code_"))
-          .map(([, coupon]) => coupon),
-        settings: this.settings,
-        idCounters: this.idCounters,
-      };
-      fs.writeFileSync(dbFilePath, JSON.stringify(snapshot, null, 2));
-    } catch (error) {
-      console.error("Failed to persist file database:", error);
-    }
+    // Local JSON saving has been permanently removed per user request.
   }
 
   // ===== USER OPERATIONS =====

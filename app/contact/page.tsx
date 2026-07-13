@@ -40,6 +40,8 @@ export default function ContactPage() {
       setSent(true);
       alert("Your request has been submitted successfully!");
       setTimeout(() => setSent(false), 5000);
+    } else {
+      alert("Error: Database connection failed. Please ensure MONGODB_URI is set correctly in Vercel.");
     }
   }
 
