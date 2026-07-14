@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionFromCookies } from "@/lib/auth";
 import { db } from "@/lib/db/memory";
+import { cancelShiprocketOrder, isShiprocketConfigured } from "@/lib/shipping";
 import type { OrderStatus } from "@/types/commerce";
 
 // UPDATE order status (admin only)
@@ -51,6 +52,22 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       );
     }
 
+    // If cancelling a shipped order, also cancel on Shiprocket
+    let shiprocketCancelled = false;
+    if (status === "Cancelled" && order.shiprocketOrderId && isShiprocketConfigured()) {
+      try {
+        await cancelShiprocketOrder(order.shiprocketOrderId);
+        shiprocketCancelled = true;
+      } catch (err: any) {
+        console.error("Shiprocket cancel error:", err?.message);
+        // Continue with local cancellation even if Shiprocket fails
+      }
+    }
+
+    const cancelMessage = status === "Cancelled"
+      ? `Order cancelled by admin.${shiprocketCancelled ? " Shiprocket shipment also cancelled." : ""}`
+      : message || `Order status updated to ${status}`;
+
     const updated = await db.updateOrder(id, {
           status,
           ...(paymentStatus ? { paymentStatus } : {}),
@@ -58,7 +75,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
             ...order.messages,
             {
               status,
-              text: message || `Order status updated to ${status}`,
+              text: cancelMessage,
               time: new Date().toISOString(),
             },
           ],

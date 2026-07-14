@@ -106,3 +106,26 @@ export async function createShiprocketOrder(input: CreateShiprocketOrderInput) {
     awbCode: data.awb_code,
   };
 }
+
+export async function cancelShiprocketOrder(shiprocketOrderId: string) {
+  if (!isShiprocketConfigured()) {
+    return { configured: false as const, reason: "Shiprocket not configured" };
+  }
+
+  const token = await getShiprocketToken();
+  const response = await fetch(`${shiprocketApiBase}/orders/cancel`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ ids: [Number(shiprocketOrderId)] }),
+  });
+
+  const data = (await response.json()) as { message?: string };
+  if (!response.ok) {
+    throw new Error(data.message || "Shiprocket order cancellation failed");
+  }
+
+  return { configured: true as const, cancelled: true };
+}

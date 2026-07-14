@@ -267,6 +267,22 @@ function CartPanel({ items, total }: { items: NonNullable<ReturnType<typeof useC
 }
 
 function OrdersPanel({ orders }: { orders: CustomerOrder[] }) {
+  const { cancelOrder, isLoading } = useProfileStore();
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+
+  async function handleCancel(orderId: string) {
+    if (!confirm("Kya aap ye order cancel karna chahte hain? Ye action undo nahi hoga.")) return;
+    try {
+      setCancellingId(orderId);
+      await cancelOrder(orderId);
+      alert("Order successfully cancelled!");
+    } catch {
+      alert("Order cancel nahi ho paya. Kripya dobara try karein.");
+    } finally {
+      setCancellingId(null);
+    }
+  }
+
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
       <h2 className="text-2xl font-black text-slate-950">Orders status</h2>
@@ -291,7 +307,26 @@ function OrdersPanel({ orders }: { orders: CustomerOrder[] }) {
                 Courier: {order.shippingProvider} - {order.shippingStatus || "Pending"}
               </p>
             ) : null}
+            {order.shiprocketAwbCode ? (
+              <a
+                href={`https://shiprocket.co/tracking/${order.shiprocketAwbCode}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700 hover:bg-blue-100 transition"
+              >
+                📦 Track Order (AWB: {order.shiprocketAwbCode})
+              </a>
+            ) : null}
             {order.messages.at(-1) ? <p className="mt-4 text-sm font-semibold text-slate-600">{order.messages.at(-1)?.text}</p> : null}
+            {["Pending", "Confirmed"].includes(order.status) ? (
+              <button
+                onClick={() => handleCancel(order.id)}
+                disabled={isLoading || cancellingId === order.id}
+                className="mt-4 inline-flex h-10 items-center justify-center rounded-full bg-rose-600 px-5 text-sm font-bold text-white shadow-sm hover:bg-rose-700 transition disabled:opacity-50"
+              >
+                {cancellingId === order.id ? "Cancelling..." : "Cancel Order"}
+              </button>
+            ) : null}
           </article>
         ))}
       </div>

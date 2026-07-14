@@ -178,9 +178,7 @@ export const useProfileStore = create<ProfileStore>((set) => ({
   cancelOrder: async (id: string) => {
     try {
       set({ isLoading: true, error: null });
-      const response = await axios.put(`/api/orders/${id}`, {
-        action: "cancel",
-      });
+      const response = await axios.post(`/api/orders/${id}/cancel`);
       set((state) => ({
         orders: state.orders.map((order) =>
           order.id === id ? response.data.order : order
