@@ -40,7 +40,10 @@ export async function POST(req: Request) {
     }
   }
   
-  const delivery = subtotal > 0 && subtotal < 3000 ? 99 : 0;
+  // ₹99 shipping for orders under ₹999 + ₹49 flat COD fee for all orders
+  const shippingCharge = subtotal > 0 && subtotal < 999 ? 99 : 0;
+  const codFee = 49;
+  const delivery = shippingCharge + codFee;
   const amount = subtotal - discount + delivery;
 
   const order = await db.createOrder({

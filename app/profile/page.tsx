@@ -283,12 +283,14 @@ function OrdersPanel({ orders }: { orders: CustomerOrder[] }) {
     }
   }
 
+  const visibleOrders = orders.filter(order => order.status !== "Cancelled");
+
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
       <h2 className="text-2xl font-black text-slate-950">Orders status</h2>
       <div className="mt-5 grid gap-4">
-        {!orders.length ? <p className="text-sm font-semibold text-slate-500">Abhi koi order nahi hai.</p> : null}
-        {orders.map((order) => (
+        {!visibleOrders.length ? <p className="text-sm font-semibold text-slate-500">Abhi koi order nahi hai.</p> : null}
+        {visibleOrders.map((order) => (
           <article className="rounded-2xl border border-slate-100 p-4" key={order.id}>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
