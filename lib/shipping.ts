@@ -129,3 +129,49 @@ export async function cancelShiprocketOrder(shiprocketOrderId: string) {
 
   return { configured: true as const, cancelled: true };
 }
+
+export async function getShiprocketLabel(shipmentId: string) {
+  if (!isShiprocketConfigured()) {
+    throw new Error("Shiprocket not configured");
+  }
+
+  const token = await getShiprocketToken();
+  const response = await fetch(`${shiprocketApiBase}/courier/generate/label`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ shipment_id: [Number(shipmentId)] }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to generate label");
+  }
+
+  return data.label_url;
+}
+
+export async function getShiprocketInvoice(orderId: string) {
+  if (!isShiprocketConfigured()) {
+    throw new Error("Shiprocket not configured");
+  }
+
+  const token = await getShiprocketToken();
+  const response = await fetch(`${shiprocketApiBase}/orders/print/invoice`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ ids: [Number(orderId)] }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to generate invoice");
+  }
+
+  return data.invoice_url;
+}

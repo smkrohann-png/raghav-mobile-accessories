@@ -18,6 +18,9 @@ interface AdminStore {
     totalProducts: number;
   } | null;
   orders: CustomerOrder[];
+  ordersCurrentPage: number;
+  ordersTotalPages: number;
+  ordersTotalCount: number;
   products: Product[];
   reviews: Review[];
   requests: AdminRequest[];
@@ -28,7 +31,7 @@ interface AdminStore {
 
   // Actions
   fetchDashboard: () => Promise<void>;
-  fetchAllOrders: () => Promise<void>;
+  fetchAllOrders: (page?: number, limit?: number) => Promise<void>;
   updateOrderStatus: (id: string, status: string, message?: string) => Promise<void>;
   fetchProducts: () => Promise<void>;
   saveProduct: (product: Partial<Product> & { id?: string }) => Promise<void>;
@@ -49,6 +52,9 @@ interface AdminStore {
 export const useAdminStore = create<AdminStore>((set) => ({
   dashboard: null,
   orders: [],
+  ordersCurrentPage: 1,
+  ordersTotalPages: 1,
+  ordersTotalCount: 0,
   products: [],
   reviews: [],
   requests: [],
@@ -74,11 +80,16 @@ export const useAdminStore = create<AdminStore>((set) => ({
     }
   },
 
-  fetchAllOrders: async () => {
+  fetchAllOrders: async (page = 1, limit = 20) => {
     try {
       set({ isLoading: true, error: null });
-      const { data } = await axios.get("/api/admin/orders");
-      set({ orders: data.orders });
+      const { data } = await axios.get(`/api/admin/orders?page=${page}&limit=${limit}`);
+      set({ 
+        orders: data.orders,
+        ordersCurrentPage: data.page,
+        ordersTotalPages: data.totalPages,
+        ordersTotalCount: data.total,
+      });
     } catch (error: unknown) {
       const message = getApiErrorMessage(error, "Failed to fetch orders");
       set({ error: message });

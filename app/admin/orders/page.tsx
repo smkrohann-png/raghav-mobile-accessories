@@ -9,9 +9,18 @@ import { Container } from '@/components/ui/Container';
 
 export default function AdminOrdersPage() {
   const { user, checkAuth } = useAuthStore();
-  const { orders, fetchAllOrders, updateOrderStatus, shipOrderViaShiprocket, isLoading } = useAdminStore();
+  const { 
+    orders, 
+    ordersCurrentPage, 
+    ordersTotalPages, 
+    fetchAllOrders, 
+    updateOrderStatus, 
+    shipOrderViaShiprocket, 
+    isLoading 
+  } = useAdminStore();
   const router = useRouter();
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
   const selectedOrderObj = orders.find((o) => o.id === selectedOrder);
 
   useEffect(() => {
@@ -24,15 +33,33 @@ export default function AdminOrdersPage() {
         router.push('/');
         return;
       }
-      fetchAllOrders();
+      fetchAllOrders(ordersCurrentPage);
     }
-  }, [fetchAllOrders, router, user]);
+  }, [fetchAllOrders, router, user, ordersCurrentPage]);
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     const validStatuses = ['Pending', 'Confirmed', 'Packed', 'Shipped', 'Out For Delivery', 'Delivered', 'Cancelled'];
     if (validStatuses.includes(newStatus)) {
       await updateOrderStatus(orderId, newStatus);
-      fetchAllOrders();
+      fetchAllOrders(ordersCurrentPage);
+    }
+  };
+
+  const handleDownloadDocument = async (orderId: string, type: "label" | "invoice") => {
+    try {
+      setIsDownloading(true);
+      const res = await fetch(`/api/admin/orders/${orderId}/documents?type=${type}`);
+      const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.error);
+      
+      if (data.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (err: any) {
+      alert(err.message || `Failed to download ${type}`);
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -156,14 +183,30 @@ export default function AdminOrdersPage() {
                         AWB: <strong className="text-slate-900">{selectedOrderObj.shiprocketAwbCode}</strong> · Shipment ID: {selectedOrderObj.shiprocketShipmentId}
                       </p>
                     </div>
-                    <a
-                      href={`https://shiprocket.co/tracking/${selectedOrderObj.shiprocketAwbCode}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-5 text-sm font-bold text-slate-800 transition"
-                    >
-                      Track Order ↗
-                    </a>
+                    <div className="flex flex-wrap gap-2">
+                      <a
+                        href={`https://shiprocket.co/tracking/${selectedOrderObj.shiprocketAwbCode}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-5 text-sm font-bold text-slate-800 transition"
+                      >
+                        Track ↗
+                      </a>
+                      <button
+                        onClick={() => handleDownloadDocument(selectedOrderObj.id, "label")}
+                        disabled={isDownloading}
+                        className="inline-flex h-10 items-center justify-center rounded-full border border-blue-200 bg-blue-50 hover:bg-blue-100 px-5 text-sm font-bold text-blue-700 transition disabled:opacity-50"
+                      >
+                        🏷️ Label
+                      </button>
+                      <button
+                        onClick={() => handleDownloadDocument(selectedOrderObj.id, "invoice")}
+                        disabled={isDownloading}
+                        className="inline-flex h-10 items-center justify-center rounded-full border border-blue-200 bg-blue-50 hover:bg-blue-100 px-5 text-sm font-bold text-blue-700 transition disabled:opacity-50"
+                      >
+                        📄 Invoice
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -191,6 +234,31 @@ export default function AdminOrdersPage() {
         ) : (
           <div className="text-center py-12 bg-gray-50 rounded-lg">
             <p className="text-gray-600">No orders found</p>
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {ordersTotalPages > 1 && (
+          <div className="mt-8 flex items-center justify-center gap-2">
+            <button
+              onClick={() => fetchAllOrders(ordersCurrentPage - 1)}
+              disabled={ordersCurrentPage === 1 || isLoading}
+              className="px-4 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-50 font-medium transition"
+            >
+              Previous
+            </button>
+            <div className="flex items-center gap-1 mx-4">
+              <span className="text-sm font-medium text-slate-600">
+                Page {ordersCurrentPage} of {ordersTotalPages}
+              </span>
+            </div>
+            <button
+              onClick={() => fetchAllOrders(ordersCurrentPage + 1)}
+              disabled={ordersCurrentPage === ordersTotalPages || isLoading}
+              className="px-4 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-50 font-medium transition"
+            >
+              Next
+            </button>
           </div>
         )}
 

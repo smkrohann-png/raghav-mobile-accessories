@@ -614,12 +614,26 @@ export class UnifiedDB {
     return Array.from(this.orders.values()).filter((o) => o.customer === userId);
   }
 
-  async getAllOrders(): Promise<CustomerOrder[]> {
+  async getOrdersCount(): Promise<number> {
     if (isMongoDBConfigured()) {
       await connectToDatabase();
-      return OrderModel.find().lean();
+      return OrderModel.countDocuments();
     }
-    return Array.from(this.orders.values());
+    return this.orders.size;
+  }
+
+  async getAllOrders(page: number = 1, limit: number = 20): Promise<CustomerOrder[]> {
+    const skip = (page - 1) * limit;
+    
+    if (isMongoDBConfigured()) {
+      await connectToDatabase();
+      return OrderModel.find().skip(skip).limit(limit).lean();
+    }
+    
+    const allOrders = Array.from(this.orders.values());
+    // Optionally sort by date descending here if needed
+    // allOrders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return allOrders.slice(skip, skip + limit);
   }
 
   async updateOrder(id: string, data: Partial<CustomerOrder>): Promise<CustomerOrder | null> {
