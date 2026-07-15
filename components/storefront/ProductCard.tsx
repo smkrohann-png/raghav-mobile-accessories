@@ -27,12 +27,8 @@ export function ProductCard({ product }: { product: Product }) {
             <p className="text-xl font-bold text-slate-950">{formatCurrency(product.price)}</p>
             {product.compareAt ? <p className="text-sm text-slate-400 line-through">{formatCurrency(product.compareAt)}</p> : null}
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <Button href={`/product/${product.id}`} size="sm" variant="secondary" className="rounded-xl">
-              <ShoppingBag className="h-4 w-4" />
-              View
-            </Button>
-            <AddToCartButton productId={product.id} size="sm" redirectToCart={false} className="rounded-xl !bg-orange-600 !text-white hover:!bg-orange-700" />
+          <div className="mt-2">
+            <AddToCartButton productId={product.id} size="sm" redirectToCart={false} className="w-full rounded-xl !bg-orange-600 !text-white hover:!bg-orange-700" />
           </div>
         </div>
       </div>
