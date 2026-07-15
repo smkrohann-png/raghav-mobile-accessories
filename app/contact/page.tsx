@@ -113,7 +113,62 @@ export default function ContactPage() {
 
               {requestType === "repair" && (
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  <Input name="deviceModel" placeholder="Device Model (e.g., iPhone 13)" required />
+                  <select 
+                    name="deviceModel" 
+                    className="flex h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold outline-none transition focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
+                    required
+                    defaultValue=""
+                  >
+                    <option value="" disabled>Select Device Brand & Model</option>
+                    <optgroup label="Apple iPhone">
+                      <option value="iPhone 15 Pro Max">iPhone 15 Pro Max</option>
+                      <option value="iPhone 15 Pro">iPhone 15 Pro</option>
+                      <option value="iPhone 15 Plus">iPhone 15 Plus</option>
+                      <option value="iPhone 15">iPhone 15</option>
+                      <option value="iPhone 14 Pro Max">iPhone 14 Pro Max</option>
+                      <option value="iPhone 14 Pro">iPhone 14 Pro</option>
+                      <option value="iPhone 14 Plus">iPhone 14 Plus</option>
+                      <option value="iPhone 14">iPhone 14</option>
+                      <option value="iPhone 13 Pro Max">iPhone 13 Pro Max</option>
+                      <option value="iPhone 13 Pro">iPhone 13 Pro</option>
+                      <option value="iPhone 13">iPhone 13</option>
+                      <option value="iPhone 12 / 12 Pro">iPhone 12 / 12 Pro</option>
+                      <option value="iPhone 11 / 11 Pro">iPhone 11 / 11 Pro</option>
+                      <option value="Older iPhone Models">Older iPhone Models</option>
+                    </optgroup>
+                    <optgroup label="Samsung">
+                      <option value="Galaxy S24 Series">Galaxy S24 Series</option>
+                      <option value="Galaxy S23 Series">Galaxy S23 Series</option>
+                      <option value="Galaxy S22 Series">Galaxy S22 Series</option>
+                      <option value="Galaxy Z Fold / Flip">Galaxy Z Fold / Flip</option>
+                      <option value="Galaxy A Series">Galaxy A Series (A54, A34, etc.)</option>
+                      <option value="Galaxy M / F Series">Galaxy M / F Series</option>
+                    </optgroup>
+                    <optgroup label="OnePlus">
+                      <option value="OnePlus 12 / 12R">OnePlus 12 / 12R</option>
+                      <option value="OnePlus 11 / 11R">OnePlus 11 / 11R</option>
+                      <option value="OnePlus 10 Series">OnePlus 10 Series</option>
+                      <option value="OnePlus 9 Series">OnePlus 9 Series</option>
+                      <option value="OnePlus Nord Series">OnePlus Nord Series</option>
+                    </optgroup>
+                    <optgroup label="Xiaomi / Redmi / POCO">
+                      <option value="Xiaomi 14 Series">Xiaomi 14 Series</option>
+                      <option value="Xiaomi 13 Series">Xiaomi 13 Series</option>
+                      <option value="Redmi Note 13 Series">Redmi Note 13 Series</option>
+                      <option value="Redmi Note 12 Series">Redmi Note 12 Series</option>
+                      <option value="POCO X / F / M Series">POCO X / F / M Series</option>
+                    </optgroup>
+                    <optgroup label="Other Brands">
+                      <option value="Vivo (V Series, X Series)">Vivo (V Series, X Series)</option>
+                      <option value="Oppo (Reno, Find, A Series)">Oppo (Reno, Find, A Series)</option>
+                      <option value="Realme (Number, Pro, C Series)">Realme (Number, Pro, C Series)</option>
+                      <option value="Nothing Phone">Nothing Phone (1 / 2 / 2a)</option>
+                      <option value="Motorola (Edge, G Series)">Motorola (Edge, G Series)</option>
+                      <option value="iQOO Series">iQOO Series</option>
+                      <option value="Google Pixel">Google Pixel</option>
+                      <option value="Other Model (Mention in issue)">Other Model (Mention in details below)</option>
+                    </optgroup>
+                  </select>
                   <Input name="issueType" placeholder="Issue (e.g., Screen broken)" required />
                 </div>
               )}

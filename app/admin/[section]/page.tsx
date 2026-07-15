@@ -484,31 +484,7 @@ export default function AdminModulePage() {
             </div>
           </div>
 
-          {/* Credentials Guide */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-            <div className="flex items-center gap-2 text-slate-950">
-              <HelpCircle className="h-5 w-5 text-orange-600" />
-              <h3 className="font-black text-base">How to set up Live Shiprocket Integration</h3>
-            </div>
-            <div className="text-sm text-slate-650 leading-relaxed space-y-3 font-medium">
-              <p>
-                To exit Simulation Mode and sync with your actual Shiprocket company account, paste these keys inside your backend environment file (<code className="bg-slate-100 px-1 py-0.5 rounded font-mono font-bold text-slate-900">.env.local</code> in development or your hosting provider dashboard in production):
-              </p>
-              <pre className="bg-slate-900 text-slate-100 p-4 rounded-xl text-xs font-mono select-all overflow-x-auto whitespace-pre">
-{`SHIPROCKET_EMAIL="your-registered-shiprocket-email@domain.com"
-SHIPROCKET_PASSWORD="your-shiprocket-password"
-SHIPROCKET_PICKUP_LOCATION="Primary-Pickup-Warehouse-Name"
-SHIPROCKET_CHANNEL_ID="optional-channel-id-if-configured"
-SHIPROCKET_DEFAULT_LENGTH_CM=12
-SHIPROCKET_DEFAULT_BREADTH_CM=10
-SHIPROCKET_DEFAULT_HEIGHT_CM=6
-SHIPROCKET_DEFAULT_WEIGHT_KG=0.3`}
-              </pre>
-              <div className="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-xl text-xs font-bold space-y-1">
-                <p>⚠️ Make sure the PICKUP_LOCATION value matches the exact name of your active pickup address registered in your Shiprocket account settings!</p>
-              </div>
-            </div>
-          </div>
+
         </div>
       ) : null}
 
