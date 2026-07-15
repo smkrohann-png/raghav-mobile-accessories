@@ -40,24 +40,31 @@ export async function POST(req: Request) {
     }
   }
   
-  // Pincode-based dynamic shipping
-  const pincodePrefix = address.pincode.substring(0, 2);
-  const firstDigit = address.pincode.substring(0, 1);
+  // Pincode-based dynamic shipping (Shiprocket Estimates + 40 COD Fee)
+  const pincode = address.pincode;
+  const prefix3 = pincode.substring(0, 3);
+  const prefix2 = pincode.substring(0, 2);
+  const firstDigit = pincode.substring(0, 1);
   
-  let shippingCharge = 90; // Zone 3 (Far & Rest of India)
+  let delivery = 110; // Default (South/East India) - ~70 shipping + 40 COD
   
-  if (["11", "12", "13", "14", "16"].includes(pincodePrefix)) {
-    shippingCharge = 40; // Zone 1 (Local & Nearby: Delhi, Haryana, Punjab, Chandigarh)
-  } else if (["2", "3", "4"].includes(firstDigit)) {
-    shippingCharge = 60; // Zone 2 (Metro & Central: UP, Raj, MP, Guj, Mah)
+  if (prefix3 === "135") {
+    // Local Yamunanagar
+    delivery = 70; // 30 shipping + 40 COD
+  } else if (prefix2 === "12" || prefix2 === "13") {
+    // Rest of Haryana
+    delivery = 75; // 35 shipping + 40 COD
+  } else if (["11", "14", "16", "17", "20", "21", "22", "23", "24", "25", "26", "27", "28", "30", "31", "32", "33", "34"].includes(prefix2)) {
+    // Delhi, Punjab, Chandigarh, HP, UP, Rajasthan (Regional)
+    delivery = 85; // 45 shipping + 40 COD
+  } else if (["4", "5", "38", "39"].includes(firstDigit) || ["38", "39"].includes(prefix2)) {
+    // MP, Maharashtra, Gujarat, South (Metro/National)
+    delivery = 100; // 60 shipping + 40 COD
+  } else if (["7", "8", "9"].includes(firstDigit)) {
+    // East, North East, J&K
+    delivery = 120; // 80 shipping + 40 COD
   }
-
-  // Free shipping on subtotal above ₹999 ? No, user said "remove Free Shipping on orders above 999". So we'll charge shipping on all orders or just keep it?
-  // User said "remove Free Shipping on Orders Above 999", which implies we should charge delivery always, or they just wanted the text gone.
-  // We'll keep the zone-based shipping for all orders.
   
-  const codFee = 30; // Reduced from 49 to 30
-  const delivery = shippingCharge + codFee;
   const amount = subtotal - discount + delivery;
 
   const order = await db.createOrder({

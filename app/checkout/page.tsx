@@ -56,21 +56,28 @@ export default function CheckoutPage() {
     if (subtotal === 0) return 0;
     
     const selectedAddress = addresses.find(a => a.id === effectiveAddressId);
-    let shippingCharge = 90; // Default Zone 3
+    let deliveryCost = 110; // Default (South/East India)
     
     if (selectedAddress) {
-      const prefix = selectedAddress.pincode.substring(0, 2);
-      const firstDigit = selectedAddress.pincode.substring(0, 1);
+      const pincode = selectedAddress.pincode;
+      const prefix3 = pincode.substring(0, 3);
+      const prefix2 = pincode.substring(0, 2);
+      const firstDigit = pincode.substring(0, 1);
       
-      if (["11", "12", "13", "14", "16"].includes(prefix)) {
-        shippingCharge = 40;
-      } else if (["2", "3", "4"].includes(firstDigit)) {
-        shippingCharge = 60;
+      if (prefix3 === "135") {
+        deliveryCost = 70; // Local Yamunanagar
+      } else if (prefix2 === "12" || prefix2 === "13") {
+        deliveryCost = 75; // Rest of Haryana
+      } else if (["11", "14", "16", "17", "20", "21", "22", "23", "24", "25", "26", "27", "28", "30", "31", "32", "33", "34"].includes(prefix2)) {
+        deliveryCost = 85; // Delhi, Punjab, Chandigarh, HP, UP, Rajasthan
+      } else if (["4", "5", "38", "39"].includes(firstDigit) || ["38", "39"].includes(prefix2)) {
+        deliveryCost = 100; // MP, Maharashtra, Gujarat, South
+      } else if (["7", "8", "9"].includes(firstDigit)) {
+        deliveryCost = 120; // East, North East, J&K
       }
     }
     
-    const codFee = 30;
-    return shippingCharge + codFee;
+    return deliveryCost;
   }, [subtotal, addresses, effectiveAddressId]);
 
   const total = subtotal - discount + delivery;
