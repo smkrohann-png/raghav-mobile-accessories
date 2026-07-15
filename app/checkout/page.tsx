@@ -49,11 +49,31 @@ export default function CheckoutPage() {
     }
   }, [appliedCoupon, subtotal]);
 
-  const delivery = subtotal > 0 && (subtotal - discount) < 3000 ? 99 : 0;
-  const total = subtotal - discount + delivery;
-
   const defaultAddress = useMemo(() => addresses.find((address) => address.isDefault) || addresses[0], [addresses]);
   const effectiveAddressId = selectedAddressId || defaultAddress?.id || "";
+  
+  const delivery = useMemo(() => {
+    if (subtotal === 0) return 0;
+    
+    const selectedAddress = addresses.find(a => a.id === effectiveAddressId);
+    let shippingCharge = 90; // Default Zone 3
+    
+    if (selectedAddress) {
+      const prefix = selectedAddress.pincode.substring(0, 2);
+      const firstDigit = selectedAddress.pincode.substring(0, 1);
+      
+      if (["11", "12", "13", "14", "16"].includes(prefix)) {
+        shippingCharge = 40;
+      } else if (["2", "3", "4"].includes(firstDigit)) {
+        shippingCharge = 60;
+      }
+    }
+    
+    const codFee = 30;
+    return shippingCharge + codFee;
+  }, [subtotal, addresses, effectiveAddressId]);
+
+  const total = subtotal - discount + delivery;
 
   useEffect(() => {
     checkAuth().then(() => {

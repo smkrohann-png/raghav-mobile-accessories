@@ -16,8 +16,6 @@ export default function CartPage() {
   const { isAuthenticated, checkAuth } = useAuthStore();
   const { cart, fetchCart, updateQuantity, removeFromCart, getTotalPrice, isLoading, error } = useCartStore();
   const subtotal = getTotalPrice();
-  const delivery = subtotal > 0 && subtotal < 3000 ? 99 : 0;
-  const total = subtotal + delivery;
 
   useEffect(() => {
     checkAuth().then(() => fetchCart());
@@ -66,11 +64,11 @@ export default function CartPage() {
             <h2 className="mt-4 text-2xl font-bold text-slate-950">Order summary</h2>
             <div className="mt-6 space-y-4 text-sm">
               <Row label="Subtotal" value={formatCurrency(subtotal)} />
-              <Row label="Shipping" value={delivery === 0 ? "Free" : formatCurrency(delivery)} />
+              <Row label="Shipping" value="Calculated at checkout" />
             </div>
             <div className="mt-6 flex items-center justify-between border-t border-slate-200 pt-5">
-              <span className="font-bold text-slate-950">Total</span>
-              <span className="text-2xl font-black text-slate-950">{formatCurrency(total)}</span>
+              <span className="font-bold text-slate-950">Subtotal</span>
+              <span className="text-2xl font-black text-slate-950">{formatCurrency(subtotal)}</span>
             </div>
             <Button href={cart?.items.length ? "/checkout" : "/shop"} className="mt-6 w-full" size="lg">
               {cart?.items.length ? "Checkout" : "Shop products"}

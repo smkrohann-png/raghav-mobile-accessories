@@ -63,12 +63,12 @@ export function Navbar() {
 
 <div className="hidden h-10 items-center justify-center bg-gradient-to-r from-orange-600 via-orange-500 to-orange-600 text-white sm:flex">
   <p className="text-sm font-semibold tracking-wide">
-    🚚 Free Shipping on Orders Above ₹999 • 100% Genuine Products • Fast Delivery
+    ⚡ Fast & Secure Delivery • 100% Genuine Products • Assured Quality
   </p>
 </div>
 
 <div className="flex h-9 items-center justify-center bg-gradient-to-r from-orange-600 via-orange-500 to-orange-600 px-4 text-center text-[11px] font-semibold text-white sm:hidden">
-  🚚 Free Shipping • COD Available
+  ⚡ Fast Delivery • COD Available
 </div>
       <Container className="max-w-none bg-white px-4 sm:px-5 lg:px-6 2xl:px-8">
 

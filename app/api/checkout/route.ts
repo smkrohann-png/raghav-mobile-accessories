@@ -40,9 +40,23 @@ export async function POST(req: Request) {
     }
   }
   
-  // ₹99 shipping for orders under ₹999 + ₹49 flat COD fee for all orders
-  const shippingCharge = subtotal > 0 && subtotal < 999 ? 99 : 0;
-  const codFee = 49;
+  // Pincode-based dynamic shipping
+  const pincodePrefix = address.pincode.substring(0, 2);
+  const firstDigit = address.pincode.substring(0, 1);
+  
+  let shippingCharge = 90; // Zone 3 (Far & Rest of India)
+  
+  if (["11", "12", "13", "14", "16"].includes(pincodePrefix)) {
+    shippingCharge = 40; // Zone 1 (Local & Nearby: Delhi, Haryana, Punjab, Chandigarh)
+  } else if (["2", "3", "4"].includes(firstDigit)) {
+    shippingCharge = 60; // Zone 2 (Metro & Central: UP, Raj, MP, Guj, Mah)
+  }
+
+  // Free shipping on subtotal above ₹999 ? No, user said "remove Free Shipping on orders above 999". So we'll charge shipping on all orders or just keep it?
+  // User said "remove Free Shipping on Orders Above 999", which implies we should charge delivery always, or they just wanted the text gone.
+  // We'll keep the zone-based shipping for all orders.
+  
+  const codFee = 30; // Reduced from 49 to 30
   const delivery = shippingCharge + codFee;
   const amount = subtotal - discount + delivery;
 
