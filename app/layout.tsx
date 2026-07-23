@@ -1,3 +1,4 @@
+import { GoogleAnalytics } from "@next/third-parties/google";
 import type { Metadata, Viewport } from "next";
 
 import { AppShell } from "@/components/layout/AppShell";
@@ -27,6 +28,7 @@ export default function RootLayout({
     <html lang="en" data-scroll-behavior="smooth">
       <body className="flex min-h-screen flex-col bg-white text-slate-950 antialiased">
         <AppShell>{children}</AppShell>
+        <GoogleAnalytics gaId="G-QZD1FT2J1J" />
       </body>
     </html>
   );
