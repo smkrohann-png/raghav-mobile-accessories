@@ -555,7 +555,18 @@ function ProductForm({
       <Header title={editing ? "Edit product" : "Add product"} />
       <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-2">
         <Input name="name" placeholder="Product name" defaultValue={editing?.name} required />
-        <Input name="category" placeholder="Category" defaultValue={editing?.category || "Data Cables"} required />
+        <select
+          name="category"
+          className="flex h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
+          defaultValue={editing?.category || "Data Cables"}
+          required
+        >
+          <option value="Data Cables">Data Cables</option>
+          <option value="Chargers">Chargers</option>
+          <option value="Earphones">Earphones</option>
+          <option value="Earbuds">Earbuds</option>
+          <option value="Neckbands">Neckbands</option>
+        </select>
         <Input name="price" placeholder="Sale price (₹)" type="number" defaultValue={editing?.price} required />
         <Input name="compareAt" placeholder="Original price (₹)" type="number" defaultValue={editing?.compareAt} />
         <Input name="stock" placeholder="Stock quantity" type="number" defaultValue={editing?.stock ?? 0} required />
