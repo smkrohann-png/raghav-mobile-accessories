@@ -14,7 +14,7 @@ export default function ResetPasswordPage() {
       <Container className="max-w-5xl">
         <AuthPanel mode="reset" />
         <p className="mt-5 text-center text-sm font-semibold text-slate-600">
-          Password changed? <Link href="/login" className="text-orange-600">Login</Link>
+          Password changed? <Link href="/login" className="text-emerald-600">Login</Link>
         </p>
       </Container>
     </Section>

@@ -128,7 +128,7 @@ export function AuthPanel({ mode }: { mode: AuthMode }) {
   return (
     <div className="grid gap-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7 lg:grid-cols-[0.72fr_1fr]">
       <aside className="rounded-2xl bg-slate-950 p-6 text-white">
-        <ShieldCheck className="h-9 w-9 text-orange-300" aria-hidden />
+        <ShieldCheck className="h-9 w-9 text-emerald-300" aria-hidden />
         <h1 className="mt-6 text-3xl font-black">{copy[mode].title}</h1>
         <p className="mt-4 text-sm leading-7 text-slate-300">{copy[mode].text}</p>
       </aside>

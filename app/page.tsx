@@ -28,7 +28,7 @@ export default function HomePage() {
 
         <Link
           href="/products"
-          className="mt-8 inline-flex items-center justify-center rounded-full bg-orange-500 px-8 py-3 font-semibold text-white! transition duration-300 hover:bg-orange-600"
+          className="mt-8 inline-flex items-center justify-center rounded-full bg-emerald-500 px-8 py-3 font-semibold text-white! transition duration-300 hover:bg-emerald-600"
         >
           Shop Now
         </Link>

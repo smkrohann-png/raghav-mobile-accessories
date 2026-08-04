@@ -22,7 +22,7 @@ export function Footer() {
         <div className="grid gap-10 py-14 lg:grid-cols-[1.1fr_0.7fr_0.8fr]">
           <div>
             <Link href="/" className="flex items-center gap-3">
-              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-orange-600 text-base font-black">RA</span>
+              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-emerald-600 text-base font-black">RA</span>
               <span>
                 <span className="block text-sm font-black uppercase tracking-[0.13em]">Raghav</span>
                 <span className="block text-xs font-semibold text-slate-400">Mobile Accessories</span>
@@ -46,18 +46,18 @@ export function Footer() {
             <h3 className="text-sm font-bold uppercase tracking-[0.12em] text-slate-300">Store</h3>
             <div className="mt-5 space-y-4 text-sm text-slate-400">
               <a className="flex gap-3 transition hover:text-white" href={mapHref} target="_blank" rel="noreferrer">
-                <MapPin className="h-5 w-5 shrink-0 text-orange-400" />
+                <MapPin className="h-5 w-5 shrink-0 text-emerald-400" />
                 {storeInfo.address}
               </a>
               <a className="flex gap-3 transition hover:text-white" href={`tel:+${storeInfo.phoneRaw}`}>
-                <Phone className="h-5 w-5 shrink-0 text-orange-400" />
+                <Phone className="h-5 w-5 shrink-0 text-emerald-400" />
                 {storeInfo.phone}
               </a>
               <a className="flex gap-3 break-all transition hover:text-white" href={`mailto:${storeInfo.email}`}>
-                <Mail className="h-5 w-5 shrink-0 text-orange-400" />
+                <Mail className="h-5 w-5 shrink-0 text-emerald-400" />
                 {storeInfo.email}
               </a>
-              <p className="flex gap-3"><Send className="h-5 w-5 shrink-0 text-orange-400" /> @raghavaccessories</p>
+              <p className="flex gap-3"><Send className="h-5 w-5 shrink-0 text-emerald-400" /> @raghavaccessories</p>
             </div>
           </div>
         </div>

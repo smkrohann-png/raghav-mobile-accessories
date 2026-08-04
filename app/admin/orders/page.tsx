@@ -78,7 +78,7 @@ export default function AdminOrdersPage() {
     Confirmed: 'bg-blue-100 text-blue-800',
     Packed: 'bg-indigo-100 text-indigo-800',
     Shipped: 'bg-purple-100 text-purple-800',
-    "Out For Delivery": 'bg-orange-100 text-orange-800',
+    "Out For Delivery": 'bg-emerald-100 text-emerald-800',
     Delivered: 'bg-green-100 text-green-800',
     Cancelled: 'bg-red-100 text-red-800',
   };
@@ -144,11 +144,11 @@ export default function AdminOrdersPage() {
               <div className="bg-gray-50 border-t p-6 space-y-6">
                 {/* Shiprocket booking action */}
                 {selectedOrderObj && !selectedOrderObj.shiprocketAwbCode && ['Confirmed', 'Packed', 'Pending'].includes(selectedOrderObj.status) && (
-                  <div className="rounded-2xl border border-orange-200 bg-orange-50/50 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                       <h4 className="font-bold text-slate-900 flex items-center gap-2">
                         <span>📦 Courier Booking Ready</span>
-                        <span className="rounded bg-orange-100 text-orange-850 px-2.5 py-0.5 text-xs font-semibold">Shiprocket</span>
+                        <span className="rounded bg-emerald-100 text-emerald-850 px-2.5 py-0.5 text-xs font-semibold">Shiprocket</span>
                       </h4>
                       <p className="text-sm text-slate-600 mt-1">
                         Book courier dispatch and generate tracking ID (AWB) directly via Shiprocket.

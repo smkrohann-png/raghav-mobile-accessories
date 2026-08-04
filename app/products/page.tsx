@@ -98,7 +98,7 @@ export default function ProductsPage() {
             <button
               type="button"
               onClick={() => setCategory(allOption)}
-              className={`h-10 rounded-full px-4 text-sm font-bold transition ${category === allOption ? "bg-orange-600 text-white" : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-orange-50"}`}
+              className={`h-10 rounded-full px-4 text-sm font-bold transition ${category === allOption ? "bg-emerald-600 text-white" : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-emerald-50"}`}
             >
               All
             </button>
@@ -107,7 +107,7 @@ export default function ProductsPage() {
                 type="button"
                 key={item.slug}
                 onClick={() => setCategory(item.name)}
-                className={`h-10 rounded-full px-4 text-sm font-bold transition ${category === item.name ? "bg-orange-600 text-white" : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-orange-50"}`}
+                className={`h-10 rounded-full px-4 text-sm font-bold transition ${category === item.name ? "bg-emerald-600 text-white" : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-emerald-50"}`}
               >
                 {item.name}
               </button>

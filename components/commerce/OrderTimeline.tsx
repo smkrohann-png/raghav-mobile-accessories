@@ -29,7 +29,7 @@ export function OrderTimeline({
                 <span
                   className={cn(
                     "grid h-8 w-8 place-items-center rounded-full border text-slate-400",
-                    done && "border-orange-600 bg-orange-600 text-white",
+                    done && "border-emerald-600 bg-emerald-600 text-white",
                     active && isCancelled && "border-rose-600 bg-rose-600 text-white",
                   )}
                 >
@@ -43,7 +43,7 @@ export function OrderTimeline({
                     <Circle className="h-3 w-3" />
                   )}
                 </span>
-                {index < list.length - 1 ? <span className={cn("h-8 w-px bg-slate-200", done && "bg-orange-200")} /> : null}
+                {index < list.length - 1 ? <span className={cn("h-8 w-px bg-slate-200", done && "bg-emerald-200")} /> : null}
               </div>
               <div className="pb-4">
                 <p className="font-bold text-slate-950">{status}</p>
@@ -66,7 +66,7 @@ export function StatusBadge({ status }: { status: OrderStatus }) {
     <span
       className={cn(
         "inline-flex h-8 items-center rounded-full px-3 text-xs font-bold uppercase tracking-[0.08em]",
-        cancelled ? "bg-rose-50 text-rose-700" : "bg-orange-50 text-orange-700",
+        cancelled ? "bg-rose-50 text-rose-700" : "bg-emerald-50 text-emerald-700",
       )}
     >
       {status}

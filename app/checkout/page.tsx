@@ -182,8 +182,8 @@ export default function CheckoutPage() {
             {addresses.length ? (
               <div className="grid gap-3">
                 {addresses.map((address) => (
-                  <label className={`block rounded-2xl border p-4 text-sm transition ${effectiveAddressId === address.id ? "border-orange-300 bg-orange-50 ring-4 ring-orange-100" : "border-slate-200"}`} key={address.id}>
-                    <input className="mr-2 accent-orange-600" type="radio" name="addressId" checked={effectiveAddressId === address.id} onChange={() => setSelectedAddressId(address.id)} />
+                  <label className={`block rounded-2xl border p-4 text-sm transition ${effectiveAddressId === address.id ? "border-emerald-300 bg-emerald-50 ring-4 ring-emerald-100" : "border-slate-200"}`} key={address.id}>
+                    <input className="mr-2 accent-emerald-600" type="radio" name="addressId" checked={effectiveAddressId === address.id} onChange={() => setSelectedAddressId(address.id)} />
                     <strong>{address.fullName}</strong> - {address.street}, {address.city}, {address.state} {address.pincode}
                   </label>
                 ))}
@@ -204,7 +204,7 @@ export default function CheckoutPage() {
               </>
             ) : null}
             <PanelTitle title="Payment method" />
-            <div className="rounded-2xl border border-orange-300 bg-orange-50 p-4 ring-4 ring-orange-100">
+            <div className="rounded-2xl border border-emerald-300 bg-emerald-50 p-4 ring-4 ring-emerald-100">
               <span className="block font-bold text-slate-950">Cash On Delivery</span>
               <span className="mt-1 block text-sm leading-6 text-slate-600">Pay only when the order is delivered.</span>
             </div>
@@ -230,9 +230,9 @@ export default function CheckoutPage() {
             <div className="mt-5 border-t border-slate-200 pt-5">
               <p className="text-sm font-bold text-slate-800 mb-2">Have a Promo Code?</p>
               {appliedCoupon ? (
-                <div className="flex items-center justify-between rounded-xl bg-orange-50 border border-orange-200 px-3 py-2 text-sm font-semibold text-orange-850">
+                <div className="flex items-center justify-between rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm font-semibold text-emerald-850">
                   <span>{appliedCoupon.code} applied (-₹{discount})</span>
-                  <button type="button" onClick={handleRemoveCoupon} className="text-orange-600 hover:text-orange-800 text-xs font-bold underline ml-2">Remove</button>
+                  <button type="button" onClick={handleRemoveCoupon} className="text-emerald-600 hover:text-emerald-800 text-xs font-bold underline ml-2">Remove</button>
                 </div>
               ) : (
                 <div className="flex gap-2">
@@ -241,7 +241,7 @@ export default function CheckoutPage() {
                     placeholder="Enter code"
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value)}
-                    className="flex-1 min-w-0 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none uppercase font-semibold focus:border-orange-400"
+                    className="flex-1 min-w-0 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none uppercase font-semibold focus:border-emerald-400"
                   />
                   <button type="button" onClick={handleApplyCoupon} disabled={isValidatingCoupon || !couponCode} className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white hover:bg-slate-800 disabled:opacity-50">
                     {isValidatingCoupon ? "..." : "Apply"}
@@ -296,7 +296,7 @@ function Trust({
 }) {
   return (
     <div className="flex gap-3">
-      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-orange-50 text-orange-600">
+      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-emerald-50 text-emerald-600">
         <Icon className="h-5 w-5" />
       </span>
       <span>

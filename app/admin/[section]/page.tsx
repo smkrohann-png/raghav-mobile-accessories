@@ -164,9 +164,9 @@ export default function AdminModulePage() {
     <div className="mx-auto max-w-[1500px] space-y-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm font-bold uppercase text-orange-600">Admin module</p>
+          <p className="text-sm font-bold uppercase text-emerald-600">Admin module</p>
           <h1 className="mt-2 flex items-center gap-3 text-2xl font-black text-slate-950 sm:text-3xl">
-            <Icon className="h-7 w-7 text-orange-600" />
+            <Icon className="h-7 w-7 text-emerald-600" />
             {meta.title}
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{meta.description}</p>
@@ -205,7 +205,7 @@ export default function AdminModulePage() {
               <article key={category.slug} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <h2 className="text-lg font-black text-slate-950">{category.name}</h2>
                 <p className="mt-2 text-sm leading-6 text-slate-600">{category.description}</p>
-                <p className="mt-4 text-sm font-black text-orange-700">{count} products</p>
+                <p className="mt-4 text-sm font-black text-emerald-700">{count} products</p>
               </article>
             );
           })}
@@ -223,7 +223,7 @@ export default function AdminModulePage() {
                     <p className="font-black text-slate-950">{review.name}</p>
                     <p className="mt-1 text-sm font-semibold text-slate-500">{review.product}</p>
                   </div>
-                  <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-black text-orange-700">{review.rating} stars · {review.status}</span>
+                  <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">{review.rating} stars · {review.status}</span>
                 </div>
                 <p className="mt-3 text-sm leading-6 text-slate-700">{review.text}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
@@ -271,7 +271,7 @@ export default function AdminModulePage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold text-slate-600 block mb-1">Type</label>
-                  <select name="discountType" required className="h-12 w-full rounded-full border border-slate-200 bg-white px-5 text-sm font-semibold outline-none focus:border-orange-400">
+                  <select name="discountType" required className="h-12 w-full rounded-full border border-slate-200 bg-white px-5 text-sm font-semibold outline-none focus:border-emerald-400">
                     <option value="percentage">Percentage (%)</option>
                     <option value="fixed">Fixed Flat (₹)</option>
                   </select>
@@ -286,7 +286,7 @@ export default function AdminModulePage() {
                 <Input name="minOrderAmount" type="number" placeholder="e.g. 499" defaultValue={0} min={0} />
               </div>
               <label className="flex items-center gap-3 text-sm font-bold text-slate-700 pt-2">
-                <input name="isActive" type="checkbox" defaultChecked className="accent-orange-600 h-4 w-4" />
+                <input name="isActive" type="checkbox" defaultChecked className="accent-emerald-600 h-4 w-4" />
                 Activate coupon instantly
               </label>
               <Button type="submit" disabled={isLoading} className="w-full">Create Coupon</Button>
@@ -310,7 +310,7 @@ export default function AdminModulePage() {
                   {coupons.map((coupon) => (
                     <tr key={coupon.id} className="hover:bg-slate-55/40 transition">
                       <td className="px-5 py-4">
-                        <span className="inline-block rounded-xl bg-orange-50 border border-orange-200 px-3.5 py-1 text-sm font-black text-orange-700 font-mono">
+                        <span className="inline-block rounded-xl bg-emerald-50 border border-emerald-200 px-3.5 py-1 text-sm font-black text-emerald-700 font-mono">
                           {coupon.code}
                         </span>
                       </td>
@@ -373,8 +373,8 @@ export default function AdminModulePage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-3 rounded-2xl bg-orange-50 border border-orange-200 p-4 text-orange-850">
-                    <AlertCircle className="h-6 w-6 shrink-0 text-orange-600" />
+                  <div className="flex items-center gap-3 rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-850">
+                    <AlertCircle className="h-6 w-6 shrink-0 text-emerald-600" />
                     <div>
                       <p className="font-bold">Simulation Mode Active</p>
                       <p className="text-xs font-semibold opacity-90 mt-1">
@@ -398,7 +398,7 @@ export default function AdminModulePage() {
                 </div>
                 <div className="flex justify-between p-3 bg-slate-50 rounded-xl">
                   <span className="text-slate-500">Integration Method</span>
-                  <span className="text-orange-700 font-bold">{shiprocketConfig?.configured ? "Live API" : "Simulated AWB"}</span>
+                  <span className="text-emerald-700 font-bold">{shiprocketConfig?.configured ? "Live API" : "Simulated AWB"}</span>
                 </div>
               </div>
             </div>
@@ -452,7 +452,7 @@ export default function AdminModulePage() {
                         {new Date(order.date).toLocaleDateString()}
                       </td>
                       <td className="px-5 py-4">
-                        <span className="inline-flex items-center rounded-full bg-orange-50 px-2.5 py-0.5 text-xs font-black text-orange-750">
+                        <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-black text-emerald-750">
                           {order.shippingStatus || "AWB Booked"}
                         </span>
                       </td>
@@ -462,7 +462,7 @@ export default function AdminModulePage() {
                             href={`https://shiprocket.co/tracking/${order.shiprocketAwbCode}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-xs font-black text-orange-600 hover:text-orange-800 underline"
+                            className="inline-flex items-center gap-1.5 text-xs font-black text-emerald-600 hover:text-emerald-800 underline"
                           >
                             Track <ExternalLink className="h-3 w-3" />
                           </a>
@@ -512,10 +512,10 @@ export default function AdminModulePage() {
               <Input name="storeName" placeholder="Store name" defaultValue={settings?.storeName} />
               <Input name="email" placeholder="Admin email" defaultValue={settings?.email} />
               <Input name="phone" placeholder="Phone" defaultValue={settings?.phone} />
-              <textarea name="address" className="min-h-24 rounded-2xl border border-slate-200 p-4 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="Address" defaultValue={settings?.address} />
+              <textarea name="address" className="min-h-24 rounded-2xl border border-slate-200 p-4 text-sm outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100" placeholder="Address" defaultValue={settings?.address} />
               <Input name="lowStockThreshold" type="number" placeholder="Low stock threshold" defaultValue={settings?.lowStockThreshold || 10} />
               <label className="flex items-center gap-3 text-sm font-bold text-slate-700">
-                <input name="codEnabled" type="checkbox" defaultChecked={settings?.codEnabled ?? true} className="accent-orange-600" />
+                <input name="codEnabled" type="checkbox" defaultChecked={settings?.codEnabled ?? true} className="accent-emerald-600" />
                 Cash On Delivery enabled
               </label>
               <Button disabled={isLoading}>Save settings</Button>
@@ -638,7 +638,7 @@ function CatalogTable({
                   <td className="px-4 py-4 font-bold text-emerald-700">{discount ? `${discount}% / ${formatCurrency(savings)}` : "No offer"}</td>
                   <td className="px-4 py-4 font-bold">{product.stock}</td>
                   <td className="px-4 py-4">
-                    <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-black text-orange-700">{product.tag}</span>
+                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">{product.tag}</span>
                   </td>
                   <td className="px-4 py-4">
                     <span className={product.stock === 0 ? "rounded-full bg-rose-50 px-3 py-1 text-xs font-black text-rose-700" : "rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700"}>

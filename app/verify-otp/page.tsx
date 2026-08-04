@@ -14,7 +14,7 @@ export default function VerifyOtpPage() {
       <Container className="max-w-5xl">
         <AuthPanel mode="otp" />
         <p className="mt-5 text-center text-sm font-semibold text-slate-600">
-          OTP verified? <Link href="/reset-password" className="text-orange-600">Reset password</Link>
+          OTP verified? <Link href="/reset-password" className="text-emerald-600">Reset password</Link>
         </p>
       </Container>
     </Section>

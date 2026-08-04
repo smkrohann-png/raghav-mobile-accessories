@@ -5,7 +5,7 @@ import type { Product } from "@/types/product";
 import { cn } from "@/lib/utils";
 
 const toneStyles = {
-  orange: "from-orange-100 via-white to-amber-50 text-orange-600",
+  orange: "from-emerald-100 via-white to-amber-50 text-emerald-600",
   navy: "from-slate-100 via-white to-blue-50 text-slate-900",
   silver: "from-slate-50 via-white to-zinc-100 text-slate-500",
   mint: "from-emerald-50 via-white to-cyan-50 text-emerald-600",
@@ -97,10 +97,10 @@ function VisualShape({ product, hero }: { product: Product; hero: boolean }) {
   if (product.visual === "powerbank") {
     return (
       <div className="relative h-52 w-36 rounded-[2rem] bg-slate-900 text-white shadow-2xl">
-        <BatteryCharging className="absolute left-1/2 top-12 h-14 w-14 -translate-x-1/2 text-orange-400" strokeWidth={1.6} />
+        <BatteryCharging className="absolute left-1/2 top-12 h-14 w-14 -translate-x-1/2 text-emerald-400" strokeWidth={1.6} />
         <div className="absolute inset-x-7 bottom-10 grid grid-cols-4 gap-1">
-          <span className="h-2 rounded-full bg-orange-400" />
-          <span className="h-2 rounded-full bg-orange-400" />
+          <span className="h-2 rounded-full bg-emerald-400" />
+          <span className="h-2 rounded-full bg-emerald-400" />
           <span className="h-2 rounded-full bg-white/70" />
           <span className="h-2 rounded-full bg-white/30" />
         </div>
