@@ -36,7 +36,7 @@ export function ProductVisual({
           alt={product.name}
           fill
           sizes={hero ? "(min-width: 1024px) 48vw, 100vw" : "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"}
-          className="object-cover"
+          className="object-contain p-6 mix-blend-multiply"
           priority={hero}
         />
       ) : (
