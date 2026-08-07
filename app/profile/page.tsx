@@ -259,9 +259,9 @@ function CartPanel({ items, total }: { items: NonNullable<ReturnType<typeof useC
           </div>
         ))}
       </div>
-      <Button className="bg-orange-600 hover:bg-orange-500 !text-white">
-  <span className="!text-white">Open cart</span>
-</Button>
+      <Button href="/cart" className="bg-orange-600 hover:bg-orange-500 !text-white">
+        <span className="!text-white">Open cart</span>
+      </Button>
     </div>
   );
 }
