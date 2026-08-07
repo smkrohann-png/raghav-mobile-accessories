@@ -9,10 +9,10 @@ function replaceInFile(filePath) {
   // Or text-orange, bg-orange, hover:bg-orange, etc.
   // Using a simple regex to replace 'orange-' with 'emerald-'
   // We'll also check if it's 'orange' exactly in some contexts, but mostly 'orange-' is safe.
-  const regex = /orange-/g;
+  const regex = /emerald-/g;
   
   if (regex.test(content)) {
-    content = content.replace(regex, 'emerald-');
+    content = content.replace(regex, 'orange-');
     fs.writeFileSync(filePath, content, 'utf8');
     console.log(`Updated ${filePath}`);
   }

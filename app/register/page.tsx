@@ -14,7 +14,7 @@ export default function RegisterPage() {
       <Container className="max-w-5xl">
         <AuthPanel mode="register" />
         <p className="mt-5 text-center text-sm font-semibold text-slate-600">
-          Already registered? <Link href="/login" className="text-emerald-600">Login</Link>
+          Already registered? <Link href="/login" className="text-orange-600">Login</Link>
         </p>
       </Container>
     </Section>

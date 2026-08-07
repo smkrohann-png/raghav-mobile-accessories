@@ -15,7 +15,7 @@ export function ProductCard({ product }: { product: Product }) {
   const [quickViewOpen, setQuickViewOpen] = useState(false);
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-xl hover:shadow-emerald-100/60">
+    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-orange-200 hover:shadow-xl hover:shadow-orange-100/60">
       <div className="relative p-3">
         <ProductVisual product={product} className="rounded-xl transition duration-500 group-hover:scale-[1.015]" />
       </div>
@@ -28,7 +28,7 @@ export function ProductCard({ product }: { product: Product }) {
             {product.compareAt ? <p className="text-sm text-slate-400 line-through">{formatCurrency(product.compareAt)}</p> : null}
           </div>
           <div className="mt-2">
-            <AddToCartButton productId={product.id} size="sm" redirectToCart={false} className="w-full rounded-xl !bg-emerald-600 !text-white hover:!bg-emerald-700" />
+            <AddToCartButton productId={product.id} size="sm" redirectToCart={false} className="w-full rounded-xl !bg-orange-600 !text-white hover:!bg-orange-700" />
           </div>
         </div>
       </div>
@@ -65,7 +65,7 @@ export function ProductCard({ product }: { product: Product }) {
                 <div className="mt-5 grid gap-2">
                   {product.features.map((feature) => (
                     <span className="flex items-center gap-2 text-sm font-semibold text-slate-700" key={feature}>
-                      <Zap className="h-4 w-4 text-emerald-600" />
+                      <Zap className="h-4 w-4 text-orange-600" />
                       {feature}
                     </span>
                   ))}

@@ -52,7 +52,7 @@ export default function CartPage() {
                 </div>
                 <div className="flex items-center justify-between gap-4 sm:block sm:text-right">
                   <p className="text-xl font-black text-slate-950">{formatCurrency(item.product.price * item.quantity)}</p>
-                  <button className="mt-0 inline-grid h-10 w-10 place-items-center rounded-full border border-slate-200 text-slate-500 hover:text-emerald-600 sm:mt-5" aria-label={`Remove ${item.product.name}`} onClick={() => removeFromCart(item.productId)}>
+                  <button className="mt-0 inline-grid h-10 w-10 place-items-center rounded-full border border-slate-200 text-slate-500 hover:text-orange-600 sm:mt-5" aria-label={`Remove ${item.product.name}`} onClick={() => removeFromCart(item.productId)}>
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
@@ -60,7 +60,7 @@ export default function CartPage() {
             ) : null)}
           </div>
           <aside className="h-fit rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <ShoppingBag className="h-8 w-8 text-emerald-600" />
+            <ShoppingBag className="h-8 w-8 text-orange-600" />
             <h2 className="mt-4 text-2xl font-bold text-slate-950">Order summary</h2>
             <div className="mt-6 space-y-4 text-sm">
               <Row label="Subtotal" value={formatCurrency(subtotal)} />

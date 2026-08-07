@@ -23,7 +23,7 @@ export function SectionTitle({
       )}
     >
       <div className={cn("max-w-2xl", align === "center" && "mx-auto")}>
-        {eyebrow ? <p className="mb-3 text-sm font-bold uppercase tracking-[0.14em] text-emerald-600">{eyebrow}</p> : null}
+        {eyebrow ? <p className="mb-3 text-sm font-bold uppercase tracking-[0.14em] text-orange-600">{eyebrow}</p> : null}
         <h2 className="text-3xl font-bold leading-tight text-slate-950 sm:text-4xl lg:text-5xl">{title}</h2>
         {description ? <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg">{description}</p> : null}
       </div>

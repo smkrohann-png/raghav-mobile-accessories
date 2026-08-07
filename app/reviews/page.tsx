@@ -66,7 +66,7 @@ export default function ReviewsPage() {
           <div className="grid gap-5">
             {reviews.map((review) => (
               <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm" key={`${review.name}-${review.product}-${review.rating}`}>
-                <div className="flex gap-1 text-emerald-400">
+                <div className="flex gap-1 text-orange-400">
                   {Array.from({ length: review.rating }).map((_, index) => (
                     <Star className="h-4 w-4 fill-current" key={index} />
                   ))}
@@ -91,14 +91,14 @@ export default function ReviewsPage() {
             <h2 className="text-2xl font-black text-slate-950">Write a review</h2>
             <div className="mt-5 grid gap-4">
               <Input name="name" placeholder="Your name" required />
-              <select name="rating" className="h-12 rounded-full border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100" defaultValue="5">
+              <select name="rating" className="h-12 rounded-full border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" defaultValue="5">
                 <option value="5">5 stars</option>
                 <option value="4">4 stars</option>
                 <option value="3">3 stars</option>
                 <option value="2">2 stars</option>
                 <option value="1">1 star</option>
               </select>
-              <textarea name="text" className="min-h-36 resize-none rounded-3xl border border-slate-200 p-5 text-sm outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100" placeholder="Share your experience" required />
+              <textarea name="text" className="min-h-36 resize-none rounded-3xl border border-slate-200 p-5 text-sm outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="Share your experience" required />
             </div>
             <Button className="mt-5 w-full" type="submit">
               <Send className="h-4 w-4" />
@@ -113,9 +113,9 @@ export default function ReviewsPage() {
     {modalInfo.show && (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity">
         <div className="bg-white rounded-3xl shadow-xl max-w-md w-full p-8 text-center animate-in fade-in zoom-in duration-200">
-          <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${modalInfo.type === 'success' ? 'bg-emerald-100' : 'bg-red-100'} mb-6`}>
+          <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${modalInfo.type === 'success' ? 'bg-orange-100' : 'bg-red-100'} mb-6`}>
             {modalInfo.type === 'success' ? (
-              <svg className="h-8 w-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-8 w-8 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
               </svg>
             ) : (

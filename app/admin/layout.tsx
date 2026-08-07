@@ -134,7 +134,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                   onClick={() => setMobileOpen(false)}
                   className={cn(
                     "flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-bold transition",
-                    active ? "bg-emerald-50 text-emerald-700" : "text-slate-700 hover:bg-slate-100 hover:text-slate-950",
+                    active ? "bg-orange-50 text-orange-700" : "text-slate-700 hover:bg-slate-100 hover:text-slate-950",
                     collapsed && "lg:justify-center lg:px-0",
                   )}
                   title={collapsed ? label : undefined}

@@ -61,13 +61,13 @@ export function Navbar() {
 
      {/* ================= Announcement Bar ================= */}
 
-<div className="hidden h-10 items-center justify-center bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 text-white sm:flex">
+<div className="hidden h-10 items-center justify-center bg-gradient-to-r from-orange-600 via-orange-500 to-orange-600 text-white sm:flex">
   <p className="text-sm font-semibold tracking-wide">
     ⚡ Fast & Secure Delivery • 100% Genuine Products • Assured Quality
   </p>
 </div>
 
-<div className="flex h-9 items-center justify-center bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 px-4 text-center text-[11px] font-semibold text-white sm:hidden">
+<div className="flex h-9 items-center justify-center bg-gradient-to-r from-orange-600 via-orange-500 to-orange-600 px-4 text-center text-[11px] font-semibold text-white sm:hidden">
   ⚡ Fast Delivery • COD Available
 </div>
       <Container className="max-w-none bg-white px-4 sm:px-5 lg:px-6 2xl:px-8">
@@ -89,7 +89,7 @@ export function Navbar() {
               transition={{
                 duration: .25,
               }}
-              className="grid h-10 w-10 place-items-center rounded-2xl bg-[linear-gradient(135deg,_#111827_50%,_#10b981_50%)] text-lg font-black text-white shadow-lg sm:h-12 sm:w-12 sm:text-xl"
+              className="grid h-10 w-10 place-items-center rounded-2xl bg-[linear-gradient(135deg,_#111827_50%,_#f97316_50%)] text-lg font-black text-white shadow-lg sm:h-12 sm:w-12 sm:text-xl"
             >
               R
             </motion.div>
@@ -98,7 +98,7 @@ export function Navbar() {
               <h2 className="truncate text-[15px] font-black uppercase tracking-[0.1em] text-slate-950 sm:text-[18px] sm:tracking-[0.14em]">
                 RAGHAV
               </h2>
-              <p className="mt-1 text-[12px] font-semibold tracking-wide text-emerald-600">
+              <p className="mt-1 text-[12px] font-semibold tracking-wide text-orange-600">
                 Mobile Accessories
               </p>
             </div>
@@ -129,7 +129,7 @@ export function Navbar() {
 
           <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
             <form action="/search" method="get" className="hidden relative h-11 w-[min(28vw,320px)] rounded-full border border-slate-200 bg-white shadow-sm lg:flex">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-600" />
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-orange-600" />
               <input
                 type="search"
                 name="q"
@@ -164,7 +164,7 @@ export function Navbar() {
   href="/profile"
   label="Profile"
   icon={<UserRound className="h-5 w-5" />}
-  className="hidden sm:grid !bg-gradient-to-br !from-emerald-500 !to-emerald-600 !border-emerald-500 !text-white hover:!from-emerald-600 hover:!to-emerald-700 hover:!border-emerald-600 hover:shadow-lg hover:shadow-emerald-500/30"
+  className="hidden sm:grid !bg-gradient-to-br !from-orange-500 !to-orange-600 !border-orange-500 !text-white hover:!from-orange-600 hover:!to-orange-700 hover:!border-orange-600 hover:shadow-lg hover:shadow-orange-500/30"
 />
 
             {/* Mobile Toggle */}
@@ -173,7 +173,7 @@ export function Navbar() {
               whileTap={{ scale: .9 }}
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label="Menu"
-              className="grid h-10 w-10 place-items-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600 sm:h-11 sm:w-11 xl:hidden"
+              className="grid h-10 w-10 place-items-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-orange-200 hover:bg-orange-50 hover:text-orange-600 sm:h-11 sm:w-11 xl:hidden"
             >
 
               <AnimatePresence mode="wait">
@@ -300,7 +300,7 @@ function MobileNavItem({
     <Link
       href={href}
       onClick={onClick}
-      className={`rounded-2xl text-[15px] font-semibold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-600 flex items-center justify-center gap-2 ${compact ? "px-4 py-3 text-center" : "px-5 py-4"}`}
+      className={`rounded-2xl text-[15px] font-semibold text-slate-700 transition hover:bg-orange-50 hover:text-orange-600 flex items-center justify-center gap-2 ${compact ? "px-4 py-3 text-center" : "px-5 py-4"}`}
     >
       {Icon && <Icon className="h-4 w-4" />}
       {label}

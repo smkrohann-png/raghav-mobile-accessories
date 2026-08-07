@@ -79,7 +79,7 @@ export default function ContactPage() {
                   onClick={() => setRequestType(tab.id as RequestType)}
                   className={`flex-1 py-4 text-sm font-bold transition-colors ${
                     requestType === tab.id
-                      ? "bg-emerald-50 text-emerald-600 border-b-2 border-emerald-600"
+                      ? "bg-orange-50 text-orange-600 border-b-2 border-orange-600"
                       : "bg-white text-slate-600 hover:bg-slate-50"
                   }`}
                 >
@@ -115,7 +115,7 @@ export default function ContactPage() {
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <select 
                     name="deviceModel" 
-                    className="flex h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
+                    className="flex h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold outline-none transition focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
                     required
                     defaultValue=""
                   >
@@ -175,7 +175,7 @@ export default function ContactPage() {
 
               <textarea 
                 name="message" 
-                className="mt-4 min-h-[140px] w-full resize-none rounded-2xl border border-slate-200 bg-white p-5 text-sm outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100" 
+                className="mt-4 min-h-[140px] w-full resize-none rounded-2xl border border-slate-200 bg-white p-5 text-sm outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100" 
                 placeholder={
                   requestType === "repair" ? "Describe the issue in detail..." :
                   requestType === "complaint" ? "Please explain your complaint..." :
@@ -197,9 +197,9 @@ export default function ContactPage() {
     {modalInfo.show && (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity">
         <div className="bg-white rounded-3xl shadow-xl max-w-md w-full p-8 text-center animate-in fade-in zoom-in duration-200">
-          <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${modalInfo.type === 'success' ? 'bg-emerald-100' : 'bg-red-100'} mb-6`}>
+          <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${modalInfo.type === 'success' ? 'bg-orange-100' : 'bg-red-100'} mb-6`}>
             {modalInfo.type === 'success' ? (
-              <svg className="h-8 w-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-8 w-8 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
               </svg>
             ) : (
@@ -233,7 +233,7 @@ function ContactTile({
 }) {
   return (
     <div className="flex gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-emerald-50 text-emerald-600">
+      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-50 text-orange-600">
         <Icon className="h-5 w-5" />
       </span>
       <div>

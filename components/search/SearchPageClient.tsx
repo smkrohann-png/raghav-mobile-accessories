@@ -50,7 +50,7 @@ export default function SearchPageClient() {
             <div className="flex flex-wrap gap-2">
               {['All', ...categories.map((item) => item.name)].map((item) => (
                 <button
-                  className={`h-12 rounded-full border px-4 text-sm font-bold transition ${category === item ? "border-slate-950 bg-slate-950 text-white" : "border-slate-200 bg-white text-slate-700 hover:border-emerald-200 hover:bg-emerald-50"}`}
+                  className={`h-12 rounded-full border px-4 text-sm font-bold transition ${category === item ? "border-slate-950 bg-slate-950 text-white" : "border-slate-200 bg-white text-slate-700 hover:border-orange-200 hover:bg-orange-50"}`}
                   key={item}
                   onClick={() => setCategory(item)}
                 >
@@ -60,7 +60,7 @@ export default function SearchPageClient() {
             </div>
           </div>
           <div className="mt-5 flex flex-wrap items-center gap-3 text-sm font-semibold text-slate-500">
-            <Sparkles className="h-4 w-4 text-emerald-600" />
+            <Sparkles className="h-4 w-4 text-orange-600" />
             <span>{results.length} matching accessories</span>
             <span className="hidden h-1 w-1 rounded-full bg-slate-300 sm:block" />
             <SlidersHorizontal className="h-4 w-4 text-slate-400" />

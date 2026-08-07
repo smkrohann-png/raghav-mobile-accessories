@@ -101,9 +101,9 @@ function DeviceMediaCard({
     duration-500
     group-hover:-translate-y-2
     group-hover:scale-[1.02]
-    group-hover:border-emerald-300
+    group-hover:border-orange-300
     group-hover:shadow-2xl
-    group-hover:shadow-emerald-100/60
+    group-hover:shadow-orange-100/60
   "
 >
        
@@ -159,7 +159,7 @@ export function WhyChooseRaghav() {
           viewport={{ once: true }}
           className="mx-auto max-w-3xl text-center"
         >
-          <span className="inline-flex rounded-full bg-emerald-100 px-5 py-2 text-xs font-bold uppercase tracking-[0.22em] text-emerald-600">
+          <span className="inline-flex rounded-full bg-orange-100 px-5 py-2 text-xs font-bold uppercase tracking-[0.22em] text-orange-600">
             Why Choose Us
           </span>
 
@@ -213,11 +213,11 @@ export function WhyChooseRaghav() {
                 transition-all
                 duration-300
                 hover:-translate-y-2
-                hover:border-emerald-200
+                hover:border-orange-200
                 hover:shadow-xl
               "
             >
-              <CheckCircle2 className="h-10 w-10 text-emerald-600" />
+              <CheckCircle2 className="h-10 w-10 text-orange-600" />
 
               <h3 className="mt-6 text-2xl font-black text-slate-950">
                 {item.title}
@@ -235,7 +235,7 @@ export function WhyChooseRaghav() {
 
 <section className="relative left-1/2 mt-20 w-screen -translate-x-1/2  bg-slate-900 px-8 py-20 text-white shadow-2xl sm:px-12 lg:px-20">
   <div className="mx-auto max-w-3xl text-center">
-    <MapPin className="mx-auto h-16 w-16 text-emerald-500" />
+    <MapPin className="mx-auto h-16 w-16 text-orange-500" />
 
     <h3 className="mt-6 text-4xl font-black">
       Store Highlights
@@ -275,11 +275,11 @@ export function WhyChooseRaghav() {
                 }}
                 className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
               >
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100">
-                  <Icon className="h-6 w-6 text-emerald-600" />
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-100">
+                  <Icon className="h-6 w-6 text-orange-600" />
                 </div>
 
-                <p className="mt-5 text-xs font-black uppercase tracking-[0.2em] text-emerald-600">
+                <p className="mt-5 text-xs font-black uppercase tracking-[0.2em] text-orange-600">
                   Step {index + 1}
                 </p>
 

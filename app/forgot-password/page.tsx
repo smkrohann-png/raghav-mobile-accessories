@@ -14,7 +14,7 @@ export default function ForgotPasswordPage() {
       <Container className="max-w-5xl">
         <AuthPanel mode="forgot" />
         <p className="mt-5 text-center text-sm font-semibold text-slate-600">
-          Have the code? <Link href="/verify-otp" className="text-emerald-600">Verify OTP</Link>
+          Have the code? <Link href="/verify-otp" className="text-orange-600">Verify OTP</Link>
         </p>
       </Container>
     </Section>

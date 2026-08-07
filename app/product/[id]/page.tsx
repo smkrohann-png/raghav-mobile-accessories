@@ -37,7 +37,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     <>
       <Section className="pt-10">
         <Container>
-          <Link className="mb-8 inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-emerald-600" href="/products">
+          <Link className="mb-8 inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-orange-600" href="/products">
             <ArrowLeft className="h-4 w-4" />
             Back to products
           </Link>
@@ -61,14 +61,14 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   {product.features.map((feature) => (
                     <p className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm font-semibold text-slate-700" key={feature}>
-                      <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
+                      <CheckCircle2 className="h-5 w-5 shrink-0 text-orange-600" />
                       {feature}
                     </p>
                   ))}
                 </div>
               </div>
               <div className="mt-9">
-                <AddToCartButton productId={product.id} size="lg" className="!bg-emerald-600 !text-white hover:!bg-emerald-700" />
+                <AddToCartButton productId={product.id} size="lg" className="!bg-orange-600 !text-white hover:!bg-orange-700" />
               </div>
             </div>
           </div>

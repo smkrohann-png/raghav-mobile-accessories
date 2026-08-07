@@ -35,7 +35,7 @@ export default function ExplorePage() {
       <section className="bg-slate-900 py-20 text-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto flex max-w-5xl flex-col items-center text-center">
-            <ShieldCheck className="h-16 w-16 text-emerald-500 mb-6" />
+            <ShieldCheck className="h-16 w-16 text-orange-500 mb-6" />
             <h2 className="text-4xl font-black mb-6">Our Promise</h2>
             <p className="text-lg leading-relaxed text-slate-300">
               We believe every customer deserves premium products, honest pricing, secure packaging and reliable support.<br />
@@ -51,7 +51,7 @@ export default function ExplorePage() {
     <div className="mx-auto max-w-6xl">
 
       <div className="mb-16 text-center">
-        <p className="mb-3 text-sm font-bold uppercase tracking-[0.35em] text-emerald-600">
+        <p className="mb-3 text-sm font-bold uppercase tracking-[0.35em] text-orange-600">
           FAQs
         </p>
 
@@ -76,7 +76,7 @@ export default function ExplorePage() {
               className={`overflow-hidden rounded-2xl border bg-white transition-all duration-300
               ${
                 isOpen
-                  ? "border-emerald-300 shadow-md"
+                  ? "border-orange-300 shadow-md"
                   : "border-slate-200 hover:border-slate-300 hover:shadow-sm"
               }`}
             >
@@ -91,7 +91,7 @@ export default function ExplorePage() {
                 <ChevronDown
                   className={`h-5 w-5 shrink-0 transition-transform duration-300 ${
                     isOpen
-                      ? "rotate-180 text-emerald-500"
+                      ? "rotate-180 text-orange-500"
                       : "text-slate-500"
                   }`}
                 />

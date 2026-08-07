@@ -49,7 +49,7 @@ export default function SupportPage() {
             <SupportTile icon={Mail} title={storeInfo.email} text="Order and COD help" />
           </div>
           <form onSubmit={handleSubmit} className="order-1 lg:order-2 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 lg:p-8">
-            <select name="requestType" className="mb-4 h-12 w-full rounded-full border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100" defaultValue="support">
+            <select name="requestType" className="mb-4 h-12 w-full rounded-full border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100" defaultValue="support">
               <option value="support">Order / product support</option>
               <option value="repair">Repair request</option>
             </select>
@@ -61,9 +61,9 @@ export default function SupportPage() {
               <Input name="email" placeholder="Email address" type="email" required />
               <Input name="phone" placeholder="Phone number" inputMode="tel" required />
             </div>
-            <textarea name="message" className="mt-4 min-h-[140px] sm:min-h-[180px] w-full resize-none rounded-3xl border border-slate-200 bg-white p-4 sm:p-5 text-sm outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100" placeholder="How can we help?" required />
+            <textarea name="message" className="mt-4 min-h-[140px] sm:min-h-[180px] w-full resize-none rounded-3xl border border-slate-200 bg-white p-4 sm:p-5 text-sm outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100" placeholder="How can we help?" required />
             <Button className="mt-5 h-12 w-full sm:w-auto px-8">Send request</Button>
-            {sent ? <p className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">Request admin panel me chali gayi hai.</p> : null}
+            {sent ? <p className="mt-4 rounded-2xl bg-orange-50 px-4 py-3 text-sm font-bold text-orange-700">Request admin panel me chali gayi hai.</p> : null}
           </form>
         </div>
       </Container>
@@ -81,8 +81,8 @@ function SupportTile({
   text: string;
 }) {
   return (
-    <div className="flex items-start gap-4 rounded-3xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm transition hover:border-emerald-200 hover:shadow-md">
-      <span className="grid h-11 w-11 sm:h-12 sm:w-12 shrink-0 place-items-center rounded-2xl bg-emerald-50 text-emerald-600">
+    <div className="flex items-start gap-4 rounded-3xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm transition hover:border-orange-200 hover:shadow-md">
+      <span className="grid h-11 w-11 sm:h-12 sm:w-12 shrink-0 place-items-center rounded-2xl bg-orange-50 text-orange-600">
         <Icon className="h-5 w-5" />
       </span>
       <div>

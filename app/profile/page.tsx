@@ -101,7 +101,7 @@ export default function ProfilePage() {
             <div className="mt-3 grid gap-1">
               {navItems.map(({ label, value, icon: Icon }) => (
                 <button
-                  className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-bold transition ${activeTab === value ? "bg-emerald-50 text-emerald-700" : "text-slate-700 hover:bg-slate-50"}`}
+                  className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-bold transition ${activeTab === value ? "bg-orange-50 text-orange-700" : "text-slate-700 hover:bg-slate-50"}`}
                   key={label}
                   onClick={() => {
                     if (value === "logout") {
@@ -175,7 +175,7 @@ function ProfilePanel({
         <Input name="phone" defaultValue={profile.phone} placeholder="Phone number" required inputMode="numeric" />
       </div>
       <Button className="mt-5" disabled={isLoading} type="submit">{isLoading ? "Saving..." : "Save profile"}</Button>
-      {saved ? <p className="mt-4 text-sm font-semibold text-emerald-700">Profile saved.</p> : null}
+      {saved ? <p className="mt-4 text-sm font-semibold text-orange-700">Profile saved.</p> : null}
     </form>
   );
 }
@@ -235,7 +235,7 @@ function AddressPanel({
         </div>
       </div>
       <Button className="mt-5" disabled={isLoading} type="submit">{isLoading ? "Saving..." : "Save address"}</Button>
-      {saved ? <p className="mt-4 text-sm font-semibold text-emerald-700">Address saved.</p> : null}
+      {saved ? <p className="mt-4 text-sm font-semibold text-orange-700">Address saved.</p> : null}
     </form>
   );
 }
@@ -259,7 +259,7 @@ function CartPanel({ items, total }: { items: NonNullable<ReturnType<typeof useC
           </div>
         ))}
       </div>
-      <Button className="bg-emerald-600 hover:bg-emerald-500 !text-white">
+      <Button className="bg-orange-600 hover:bg-orange-500 !text-white">
   <span className="!text-white">Open cart</span>
 </Button>
     </div>
