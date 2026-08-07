@@ -16,8 +16,8 @@ export function ProductCard({ product }: { product: Product }) {
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-orange-200 hover:shadow-xl hover:shadow-orange-100/60">
-      <div className="relative p-3">
-        <ProductVisual product={product} className="rounded-xl transition duration-500 group-hover:scale-[1.015]" />
+      <div className="relative border-b border-slate-100">
+        <ProductVisual product={product} className="transition duration-500 group-hover:scale-[1.015]" />
       </div>
       <div className="flex flex-1 flex-col p-5 pt-2">
         <h3 className="text-lg font-bold text-slate-950">{product.name}</h3>

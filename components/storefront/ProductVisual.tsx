@@ -25,7 +25,7 @@ export function ProductVisual({
   return (
     <div
       className={cn(
-        "relative flex aspect-[4/3] min-h-52 w-full max-w-full items-center justify-center overflow-hidden rounded-2xl",
+        "relative flex aspect-[4/3] min-h-52 w-full max-w-full items-center justify-center overflow-hidden",
         product.image ? "bg-white" : cn("bg-gradient-to-br", toneStyles[product.tone]),
         className,
       )}
