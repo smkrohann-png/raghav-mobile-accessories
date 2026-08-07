@@ -25,8 +25,8 @@ export function ProductVisual({
   return (
     <div
       className={cn(
-        "relative flex aspect-[4/3] min-h-52 w-full max-w-full items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br",
-        toneStyles[product.tone],
+        "relative flex aspect-[4/3] min-h-52 w-full max-w-full items-center justify-center overflow-hidden rounded-2xl",
+        product.image ? "bg-white" : cn("bg-gradient-to-br", toneStyles[product.tone]),
         className,
       )}
     >
@@ -36,7 +36,7 @@ export function ProductVisual({
           alt={product.name}
           fill
           sizes={hero ? "(min-width: 1024px) 48vw, 100vw" : "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"}
-          className="object-contain p-6 mix-blend-multiply"
+          className="object-contain p-6"
           priority={hero}
         />
       ) : (
