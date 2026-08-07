@@ -5,7 +5,12 @@ import {
   PackageCheck,
   ShoppingBag,
   Truck,
+  Quote
 } from "lucide-react";
+import { categories, products, testimonials } from "@/data/storefront";
+import { CategoryCard } from "@/components/storefront/CategoryCard";
+import { ProductCard } from "@/components/storefront/ProductCard";
+import { SectionTitle } from "@/components/ui/SectionTitle";
 import { motion } from "framer-motion";
 
 import { Container } from "@/components/ui/Container";
@@ -299,5 +304,99 @@ export function WhyChooseRaghav() {
     </Section>
   );
 }
+export function CategoriesSection() {
+  return (
+    <Section className="bg-slate-50 py-16">
+      <Container>
+        <SectionTitle
+          eyebrow="Shop By Category"
+          title="Find Exactly What You Need"
+          description="Browse our curated collections of premium mobile accessories."
+        />
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          {categories.map((category, index) => (
+            <motion.div
+              key={category.slug}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+            >
+              <CategoryCard category={category} />
+            </motion.div>
+          ))}
+        </div>
+      </Container>
+    </Section>
+  );
+}
 
+export function FeaturedProductsSection() {
+  // Let's pick 4 products (e.g., cables and chargers)
+  const featured = products.slice(0, 4);
+  return (
+    <Section className="bg-white py-16">
+      <Container>
+        <SectionTitle
+          eyebrow="Top Picks"
+          title="Bestselling Accessories"
+          description="Upgrade your daily tech with our most popular and reliable products."
+        />
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {featured.map((product, index) => (
+            <motion.div
+              key={product.id}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              whileInView={{ opacity: 1, scale: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              className="h-full"
+            >
+              <ProductCard product={product} />
+            </motion.div>
+          ))}
+        </div>
+      </Container>
+    </Section>
+  );
+}
 
+export function TestimonialSection() {
+  return (
+    <Section className="bg-white py-16">
+      <Container>
+        <SectionTitle
+          eyebrow="Customer Reviews"
+          title="What People Are Saying"
+          description="Don't just take our word for it. Here's what our customers have to say."
+        />
+        <div className="mt-12 grid gap-6 md:grid-cols-3">
+          {testimonials.map((testimonial, index) => (
+            <motion.article
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              className="rounded-3xl border border-slate-200 bg-slate-50 p-8 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-orange-200 hover:shadow-xl hover:shadow-orange-100/60"
+            >
+              <Quote className="h-10 w-10 text-orange-400 opacity-50" />
+              <p className="mt-6 min-h-24 text-lg font-medium leading-8 text-slate-700">
+                "{testimonial.quote}"
+              </p>
+              <div className="mt-6 flex items-center gap-4 border-t border-slate-200 pt-6">
+                <div className="grid h-12 w-12 place-items-center rounded-full bg-orange-100 text-xl font-bold text-orange-600">
+                  {testimonial.name.charAt(0)}
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-950">{testimonial.name}</h4>
+                  <p className="text-sm text-slate-500">{testimonial.role}</p>
+                </div>
+              </div>
+            </motion.article>
+          ))}
+        </div>
+      </Container>
+    </Section>
+  );
+}
